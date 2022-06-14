@@ -149,9 +149,8 @@ Glib::PropertyProxy< bool > ColorCellRenderer2::property_editable()
   if (!(g_object_get_data(G_OBJECT(gobj()), "editable")))
     return 0;
 #endif
-		  
-	std::auto_ptr< ColorCellEditable2 > color_cell_edit_ptr( new ColorCellEditable2( path, constraints ) );
-	
+
+	std::unique_ptr< ColorCellEditable2 > color_cell_edit_ptr = std::make_unique<ColorCellEditable2>(path, constraints);
 	Glib::ustring text;
 		
 #ifdef GLIBMM_PROPERTIES_ENABLED

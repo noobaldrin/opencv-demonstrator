@@ -18,13 +18,13 @@ int DemoSuperpixels::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
       input.model.get_attribute_as_int("taille"),
       input.model.get_attribute_as_float("reglage"));
   slic->iterate();
-  Mat masque;
+  cv::Mat masque;
   slic->getLabelContourMask(masque);//);
 
 
-  Mat O = input.images[0].clone();
+  cv::Mat O = input.images[0].clone();
   O /= 2;
-  O.setTo(Scalar(0,0,0), masque);
+  O.setTo(cv::Scalar(0,0,0), masque);
 
   output.images[0] = O;
 # else
@@ -37,13 +37,13 @@ DemoMahalanobis::DemoMahalanobis()
 {
   props.id = "mahalanobis";
   props.requiert_roi = true;
-  input.roi = Rect(116,77,134-116,96-77);
+  input.roi =cv::Rect(116,77,134-116,96-77);
 }
 
 
 int DemoMahalanobis::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
-  Mat I = input.images[0];
+  cv::Mat I = input.images[0];
 
   output.nout = 2;
   output.images[0] = I.clone();
@@ -56,17 +56,17 @@ int DemoMahalanobis::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   }
 
   cv::Mat ILab;
-  cvtColor(I, ILab, CV_BGR2Lab);
+  cvtColor(I, ILab, cv::COLOR_BGR2Lab);
 
   infos("Compute covar samples...");
   auto M = ILab(input.roi);
 # if 0
-  Mat samples(M.rows*M.cols,2,CV_32F);
+  cv::Mat samples(M.rows*M.cols,2,CV_32F);
   for(auto y = 0u; y < (unsigned int) M.rows; y++)
   {
     for(auto x = 0u; x < (unsigned int) M.cols; x++)
     {
-      const Vec3b &bgr = M.at<Vec3b>(y,x);
+      const cv::Vec3b &bgr = M.at<cv::Vec3b>(y,x);
       float sum = bgr[0] + bgr[1] + bgr[2];
       // R / (B + G +R)
       samples.at<float>(x+y*M.cols, 0) = bgr[2] / sum;
@@ -76,13 +76,13 @@ int DemoMahalanobis::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   }
 # endif
 
-  Mat samples(M.rows*M.cols,3,CV_32F);
+ cv::Mat samples(M.rows*M.cols,3,CV_32F);
 
   for(auto y = 0u; y < (unsigned int) M.rows; y++)
   {
     for(auto x = 0u; x < (unsigned int) M.cols; x++)
     {
-      const Vec3b &Lab = M.at<Vec3b>(y,x);
+      const cv::Vec3b &Lab = M.at<cv::Vec3b>(y,x);
       samples.at<float>(x+y*M.cols, 0) = Lab[0];
       samples.at<float>(x+y*M.cols, 1) = Lab[1];
       samples.at<float>(x+y*M.cols, 2) = Lab[2];
@@ -90,9 +90,9 @@ int DemoMahalanobis::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   }
 
   infos("Compute covar matrix...");
-  Mat covar, covari, mean;
+  cv::Mat covar, covari, mean;
   cv::calcCovarMatrix(samples, covar, mean,
-        CV_COVAR_NORMAL | CV_COVAR_SCALE | CV_COVAR_ROWS);
+                        cv::COVAR_NORMAL | cv::COVAR_SCALE | cv::COVAR_ROWS);
 
   cv::invert(covar, covari, cv::DECOMP_SVD);
 
@@ -104,16 +104,16 @@ int DemoMahalanobis::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   covari.convertTo(covari, CV_32F);
 
   infos("  Mahalanobis...");
-  const Vec3b *iptr = ILab.ptr<Vec3b>();
-  Mat v(1,3,CV_32F);
-  Mat fmask(I.size(), CV_32F);
+  const cv::Vec3b *iptr = ILab.ptr<cv::Vec3b>();
+  cv::Mat v(1,3,CV_32F);
+  cv::Mat fmask(I.size(), CV_32F);
   float *optr = fmask.ptr<float>();
 
   float *pv = v.ptr<float>(0);
 
   for(auto i = 0u; i < input.images[0].total(); i++)
   {
-    const Vec3b &Lab = *iptr++;
+    const cv::Vec3b &Lab = *iptr++;
     /*float sum = bgr[0] + bgr[1] + bgr[2];
     float cr = bgr[2] / sum;
     float cb = bgr[0] / sum;
@@ -145,18 +145,18 @@ WShedDemo::WShedDemo()
 
 int WShedDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
-  Mat gray, nb, ret;
-  cvtColor(input.images[0], gray, CV_BGR2GRAY);
-  threshold(gray,nb,0,255,CV_THRESH_BINARY_INV | CV_THRESH_OTSU);
+  cv::Mat gray, nb, ret;
+  cvtColor(input.images[0], gray, cv::COLOR_BGR2GRAY);
+  threshold(gray,nb,0,255,cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
 
 
 
   //Execute morphological-open
-  morphologyEx(nb,ret,MORPH_OPEN,Mat::ones(9,9,CV_8SC1),Point(4,4),2);
-  Mat distTransformed(ret.rows,ret.cols,CV_32F);
-  distanceTransform(ret,distTransformed,CV_DIST_L2,3);
+  morphologyEx(nb,ret,cv::MORPH_OPEN,cv::Mat::ones(9,9,CV_8SC1),cv::Point(4,4),2);
+  cv::Mat distTransformed(ret.rows,ret.cols,CV_32F);
+  distanceTransform(ret,distTransformed, cv::DistanceTypes::DIST_L2,3);
   //normalize the transformed image in order to display
-  normalize(distTransformed, distTransformed, 0.0, 255.0, NORM_MINMAX);
+  normalize(distTransformed, distTransformed, 0.0, 255.0, cv::NORM_MINMAX);
 
   output.nout = 4;
   output.images[0] = input.images[0];
@@ -164,40 +164,41 @@ int WShedDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   output.names[1] = "Distance Transformation";
 
   //threshold the transformed image to obtain markers for watershed
-  threshold(distTransformed,distTransformed,input.model.get_attribute_as_float("seuil-dist") * 255,255,CV_THRESH_BINARY);
+  threshold(distTransformed,distTransformed,input.model.get_attribute_as_float("seuil-dist") * 
+255,255,cv::THRESH_BINARY);
   distTransformed.convertTo(distTransformed,CV_8UC1);
   output.images[2] = distTransformed.clone();
   output.names[2] = "Thresholded dist. trans.";
   //imshow("Thresholded Distance Transformation",distTransformed);
 
 
-  std::vector<std::vector<Point> > contours;
-  std::vector<Vec4i> hierarchy;
-  findContours(distTransformed, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
+  std::vector<std::vector<cv::Point> > contours;
+  std::vector<cv::Vec4i> hierarchy;
+  findContours(distTransformed, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
 
   if(contours.empty())
     return -1;
-  Mat markers(distTransformed.size(), CV_32S);
-  markers = Scalar::all(0);
+  cv::Mat markers(distTransformed.size(), CV_32S);
+  markers = cv::Scalar::all(0);
   int idx, compCount = 0;
   //draw contours
 
   for(idx = 0; idx >= 0; idx = hierarchy[idx][0], compCount++)
-    drawContours(markers, contours, idx, Scalar::all(compCount+1), -1, 8, hierarchy, INT_MAX);
+    drawContours(markers, contours, idx, cv::Scalar::all(compCount+1), -1, 8, hierarchy, INT_MAX);
 
-  std::vector<Vec3b> colorTab;
+  std::vector<cv::Vec3b> colorTab;
   for(auto i = 0; i < compCount; i++ )
   {
-    int b = theRNG().uniform(0, 255);
-    int g = theRNG().uniform(0, 255);
-    int r = theRNG().uniform(0, 255);
-    colorTab.push_back(Vec3b((uchar)b, (uchar)g, (uchar)r));
+    int b = cv::theRNG().uniform(0, 255);
+    int g = cv::theRNG().uniform(0, 255);
+    int r = cv::theRNG().uniform(0, 255);
+    colorTab.push_back(cv::Vec3b((uchar)b, (uchar)g, (uchar)r));
   }
 
   //apply watershed with the markers as seeds
   watershed(input.images[0], markers);
 
-  output.images[3] = Mat(markers.size(), CV_8UC3);
+  output.images[3] = cv::Mat(markers.size(), CV_8UC3);
   infos("paint the watershed image...");
   for(auto i = 0; i < markers.rows; i++)
   {
@@ -205,11 +206,11 @@ int WShedDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
     {
       int index = markers.at<int>(i,j);
       if(index == -1)
-        output.images[3].at<Vec3b>(i,j) = Vec3b(255,255,255);
+        output.images[3].at<cv::Vec3b>(i,j) = cv::Vec3b(255,255,255);
       else if((index <= 0) || (index > compCount))
-        output.images[3].at<Vec3b>(i,j) = Vec3b(0,0,0);
+        output.images[3].at<cv::Vec3b>(i,j) = cv::Vec3b(0,0,0);
       else
-        output.images[3].at<Vec3b>(i,j) = colorTab[index - 1];
+        output.images[3].at<cv::Vec3b>(i,j) = colorTab[index - 1];
     }
   }
   output.images[3] = output.images[3] * 0.5 + input.images[0] * 0.5;
@@ -228,18 +229,18 @@ GrabCutDemo::GrabCutDemo()
 
 int GrabCutDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
-  Mat mask, bgmodel, fgmodel;
-  Mat I = input.images[0];
-  mask = Mat::zeros(I.size(), CV_8UC1);
+  cv::Mat mask, bgmodel, fgmodel;
+  cv::Mat I = input.images[0];
+  mask = cv::Mat::zeros(I.size(), CV_8UC1);
   trace_verbeuse("grabcut...");
-  Mat Id;
+  cv::Mat Id;
   cv::pyrDown(I, Id);
   cv::Rect roi2;
   roi2.x = input.roi.x / 2;
   roi2.y = input.roi.y / 2;
   roi2.width = input.roi.width / 2;
   roi2.height = input.roi.height / 2;
-  cv::grabCut(Id, mask, roi2, bgmodel, fgmodel, 1, GC_INIT_WITH_RECT);
+  cv::grabCut(Id, mask, roi2, bgmodel, fgmodel, 1, cv::GC_INIT_WITH_RECT);
   //cv::pyrUp(mask, mask);
 
   trace_verbeuse("masque...");
@@ -253,10 +254,10 @@ int GrabCutDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   {
     for(auto x = 0; x < I.cols; x++)
     {
-      uint8_t msk = mask.at<uint8_t>(Point(x/2,y/2));
-      if((msk == GC_BGD) || (msk == GC_PR_BGD))
+      uint8_t msk = mask.at<uint8_t>(cv::Point(x/2,y/2));
+      if((msk == cv::GC_BGD) || (msk == cv::GC_PR_BGD))
       {
-        Vec3b &pix = output.images[1].at<Vec3b>(Point(x,y));
+        cv::Vec3b &pix = output.images[1].at<cv::Vec3b>(cv::Point(x,y));
         pix[0] = 0;
         pix[1] = 0;
         pix[2] = 0;

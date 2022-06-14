@@ -29,7 +29,7 @@ namespace utils
 namespace comm
 {
 
-class SerialFrame: public JFrame
+class SerialFrame: public mmi::JFrame
 {
 public:
   SerialFrame(std::vector<SerialInfo> &infos, const SerialConfig &sc);

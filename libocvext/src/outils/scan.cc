@@ -44,7 +44,7 @@ int main(int argc, const char **argv)
     //cv::medianBlur(I, I, 3);
 
     //cv::equalizeHist(I, I);
-    cv::cvtColor(I, I, CV_BGR2GRAY);
+    cv::cvtColor(I, I, cv::COLOR_BGR2GRAY);
     //cv::threshold(I, I, 0, 255, cv::THRESH_OTSU);
     //cv::AdaptiveThresholdTypes
     cv::adaptiveThreshold(I, I, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 21, 20);

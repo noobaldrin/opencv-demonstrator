@@ -35,7 +35,6 @@
 //#define USE_CONTRIB
 #endif
 
-using namespace cv;
 using namespace utils::model;
 
 
@@ -86,7 +85,7 @@ public:
 
     /** Liste des images d'entrée */
     /** List of input images */
-    std::vector<Mat> images;
+    std::vector<cv::Mat> images;
   };
 
   /** Sortie */

@@ -37,7 +37,7 @@ int InpaintDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   auto I = input.images[0];
   output.images[0] = I.clone();
   if(input.mask.data != nullptr)
-    cv::inpaint(I, input.mask, output.images[1], 3, CV_INPAINT_TELEA);
+    cv::inpaint(I, input.mask, output.images[1], 3, cv::INPAINT_TELEA);
   else
   {
     infos("Le masque n'est pas défini.");
@@ -59,20 +59,20 @@ int Seuillage::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   int sel = input.model.get_attribute_as_int("sel");
 
   auto I = input.images[0];
-  Mat Ig;
-  cvtColor(I, Ig, CV_BGR2GRAY);
+  cv::Mat Ig;
+  cvtColor(I, Ig, cv::COLOR_BGR2GRAY);
 
   // Fixe
   if(sel == 0)
   {
     int seuil = input.model.get_attribute_as_int("seuillage-fixe/seuil");
-    threshold(Ig, output.images[0], seuil, 255, THRESH_BINARY_INV);
+    threshold(Ig, output.images[0], seuil, 255, cv::THRESH_BINARY_INV);
   }
   // Otsu
   else if(sel == 1)
   {
     threshold(Ig, output.images[0], 0 /* non utilisé */,
-              255, THRESH_BINARY_INV | THRESH_OTSU);
+              255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
   }
   // Adaptatif
   else if(sel == 2)
@@ -82,7 +82,7 @@ int Seuillage::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
     if((taille_bloc & 1) == 0)
       taille_bloc++;
     cv::adaptiveThreshold(Ig, output.images[0], 255,
-        ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY_INV,
+                              cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY_INV,
         taille_bloc, seuil);
     // ou ADAPTIVE_THRESH_MEAN_C
   }
@@ -96,14 +96,14 @@ DTransDemo::DTransDemo()
 
 int DTransDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
-  Mat Ig, tmp;
-  cvtColor(input.images[0], Ig, CV_BGR2GRAY);
+  cv::Mat Ig, tmp;
+  cvtColor(input.images[0], Ig, cv::COLOR_BGR2GRAY);
   threshold(Ig, output.images[0], 0 /* non utilisé */,
-                255, THRESH_BINARY_INV | THRESH_OTSU);
+                255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
   infos("dtrans...");
-  cv::distanceTransform(output.images[0], tmp, CV_DIST_L2, 3);
+  cv::distanceTransform(output.images[0], tmp,cv::DistanceTypes::DIST_L2, 3);
   infos("ok.");
-  normalize(tmp, output.images[0], 0, 255, NORM_MINMAX, CV_8UC1);
+  normalize(tmp, output.images[0], 0, 255,cv::NORM_MINMAX, CV_8UC1);
   return 0;
 }
 

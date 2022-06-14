@@ -48,7 +48,7 @@ int DemoFiltreGabor::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   cv::Mat K = cv::getGaborKernel(cv::Size(taille_noyau, taille_noyau), sigma, theta, lambda, gamma, psi);
 
   cv::Mat tmp;
-  cv::cvtColor(input.images[0], tmp, CV_BGR2GRAY);
+  cv::cvtColor(input.images[0], tmp, cv::COLOR_BGR2GRAY);
   cv::filter2D(tmp, output.images[0], -1, K);
 
   return 0;

@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     return -1;
   }
 
-  Mat I;
+  cv::Mat I;
   do
   {
     cam >> I;

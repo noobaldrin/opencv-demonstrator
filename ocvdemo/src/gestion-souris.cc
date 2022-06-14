@@ -32,7 +32,7 @@ void OCVDemo::on_event(const OCVMouseEvent &me)
 	//	me.image, me.x, me.y);
   switch (me.event)
   {
-    case CV_EVENT_LBUTTONDOWN:
+    case cv::EVENT_LBUTTONDOWN:
     {
       //trace_verbeuse("LB DOWN x = %d, y = %d.", me.x, me.y);
       rdi0.x = me.x;
@@ -48,7 +48,7 @@ void OCVDemo::on_event(const OCVMouseEvent &me)
       }
       break;
     }
-    case CV_EVENT_MOUSEMOVE:
+    case cv::EVENT_MOUSEMOVE:
     {
       if(etat_souris == 1)
       {
@@ -64,7 +64,7 @@ void OCVDemo::on_event(const OCVMouseEvent &me)
       }
       break;
     }
-    case CV_EVENT_LBUTTONUP:
+    case cv::EVENT_LBUTTONUP:
     {
       //trace_verbeuse("LB UP x = %d, y = %d.", me.x, me.y);
       if(etat_souris == 1)
@@ -77,11 +77,11 @@ void OCVDemo::on_event(const OCVMouseEvent &me)
         {
           if(demo_en_cours->props.requiert_roi)
           {
-            int minx = min(rdi0.x, rdi1.x);
-            int miny = min(rdi0.y, rdi1.y);
-            int maxx = max(rdi0.x, rdi1.x);
-            int maxy = max(rdi0.y, rdi1.y);
-            Rect rdi(minx, miny, maxx - minx, maxy - miny);
+            int minx = cv::min(rdi0.x, rdi1.x);
+            int miny = cv::min(rdi0.y, rdi1.y);
+            int maxx = cv::max(rdi0.x, rdi1.x);
+            int maxy = cv::max(rdi0.y, rdi1.y);
+            cv::Rect rdi(minx, miny, maxx - minx, maxy - miny);
             trace_majeure("Set rdi(%d,%d,%d,%d).",
                                 rdi.x, rdi.y, rdi.width, rdi.height);
             demo_en_cours->set_roi(I0, rdi);

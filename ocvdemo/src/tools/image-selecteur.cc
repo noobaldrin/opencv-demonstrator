@@ -173,7 +173,7 @@ void ImageSelecteur::maj_mosaique()
 
     cv::Mat tmp;
 
-    cv::cvtColor(im.spec.img, tmp, CV_BGR2RGB);
+    cv::cvtColor(im.spec.img, tmp, cv::COLOR_BGR2RGB);
 
     float ratio_aspect_orig   = ((float) tmp.cols) / tmp.rows;
     float ratio_aspect_sortie = ((float) img_width) / img_height;

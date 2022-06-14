@@ -132,7 +132,7 @@ void OCVDemo::export_captures(utils::model::Node &cat)
 
     s += id + ".jpg";
 
-    Mat A = mosaique.get_global_img();
+    cv::Mat A = mosaique.get_global_img();
 
     if(A.data == nullptr)
     {

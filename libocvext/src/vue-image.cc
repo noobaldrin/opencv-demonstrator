@@ -137,7 +137,7 @@ void VueImage::maj(const cv::Mat &img)
     avertissement("devrait etre BGR 8 bits, mais type = %d.", img2.type());
     return;
   }
-  cv::cvtColor(img2, img3, CV_BGR2BGRA);
+  cv::cvtColor(img2, img3, cv::COLOR_BGR2BGRA);
 
 # if !TEST00
   en_attente.img = img3;
@@ -304,7 +304,7 @@ bool VueImage::on_draw(const Cairo::RefPtr<Cairo::Context> &cr)
 
       //cv::Mat O, img2, img1;
       //ocvext::adapte_en_bgr(en_attente.img, img1);
-      //cv::cvtColor(img1, img2, CV_BGR2BGRA);
+      //cv::cvtColor(img1, img2, cv::COLOR_BGR2BGRA);
       //maj_surface(en_attente.img);
 
 #     if 0
@@ -312,7 +312,7 @@ bool VueImage::on_draw(const Cairo::RefPtr<Cairo::Context> &cr)
       cv::Mat O, img2, img1;
       ocvext::adapte_en_bgr(en_attente.img, img1);
 
-      cv::cvtColor(img1, img2, CV_BGR2BGRA);
+      cv::cvtColor(img1, img2, cv::COLOR_BGR2BGRA);
       affiche_dans_cadre(img2, O, cv::Size(sx, sy), cv::Scalar(0));
       //cv::resize(img2, O, cv::Size(sx, sy));
       //uint16_t sx = t.img.cols, sy = t.img.rows;
@@ -371,7 +371,7 @@ void VueImage::on_the_realisation()
 
     /*cv::Mat O, img2, img1;
     ocvext::adapte_en_bgr(en_attente.img, img1);
-    cv::cvtColor(img1, img2, CV_BGR2BGRA);*/
+    cv::cvtColor(img1, img2, cv::COLOR_BGR2BGRA);*/
 
 
     on_event(en_attente);

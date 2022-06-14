@@ -212,14 +212,14 @@ int etalonner_camera(const std::vector<cv::Mat> &imgs,
   {
     infos("Analyse image de cal %d / %d...", i + 1, nb_imgs);
 
-    //cv::cvtColor(input.images[0], Ig, CV_BGR2GRAY);
+    //cv::cvtColor(input.images[0], Ig, cv::COLOR_BGR2GRAY);
 
     //output.images[2] = cv::Mat(/*Ig.size()*/cv::Size(480,640), CV_8UC3);
 
     auto Ig = imgs[i];
 
     cv::Mat Ig2;
-    cv::cvtColor(Ig, Ig2, CV_BGR2GRAY);
+    cv::cvtColor(Ig, Ig2, cv::COLOR_BGR2GRAY);
 
     infos("Resolution = %d * %d", Ig.cols, Ig.rows);
 
@@ -244,12 +244,12 @@ int etalonner_camera(const std::vector<cv::Mat> &imgs,
       trouve = cv::findCirclesGrid(Ig, board_size, pointbuf );
 
 
-  //cvtColor(I, O[0], CV_GRAY2BGR);
+  //cvtColor(I, O[0], cv::COLOR_GRAY2BGR);
 
   //Mat Ior = input.images[0].clone();
   //output.images[0] = Ior.clone();
   //if(trouve)
-   //cv::drawChessboardCorners(output.images[0], board_size, Mat(pointbuf), trouve);
+   //cv::drawChessboardCorners(output.images[0], board_size, cv::Mat(pointbuf), trouve);
 
   trace_majeure("Trouvé %d coins (found = %d).",
       pointbuf.size(), (int) trouve);

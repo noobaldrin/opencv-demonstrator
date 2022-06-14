@@ -37,13 +37,13 @@ int MorphoDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   int kersel = input.model.get_attribute_as_int("kernel");
   int niter = input.model.get_attribute_as_int("niter");
 
-  int kernel_type = MORPH_RECT;
+  int kernel_type = cv::MORPH_RECT;
   if(kersel == 0)
-    kernel_type = MORPH_RECT;
+    kernel_type = cv::MORPH_RECT;
   else if(kersel == 1 )
-    kernel_type = MORPH_CROSS;
+    kernel_type = cv::MORPH_CROSS;
   else if(kersel == 2)
-    kernel_type = MORPH_ELLIPSE;
+    kernel_type = cv::MORPH_ELLIPSE;
   else
     assert(0);
 
@@ -52,9 +52,9 @@ int MorphoDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   printf("Proceed k = %d, kw = %d, sel = %d.\n", kersel, kernel_width, sel);
   fflush(0);
 
-  Mat K = getStructuringElement(kernel_type,
-                                      Size(2*kernel_width + 1, 2*kernel_width+1 ),
-                                      Point(kernel_width, kernel_width));
+  cv::Mat K = getStructuringElement(kernel_type,
+                                      cv::Size(2*kernel_width + 1, 2*kernel_width+1 ),
+                                      cv::Point(kernel_width, kernel_width));
 
   auto I = input.images[0];
 
@@ -75,9 +75,9 @@ DemoSqueletisation::DemoSqueletisation()
 
 int DemoSqueletisation::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
-  Mat A, squelette;
+  cv::Mat A, squelette;
 
-  cv::cvtColor(input.images[0], A, CV_BGR2GRAY);
+  cv::cvtColor(input.images[0], A, cv::COLOR_BGR2GRAY);
 
   if(input.model.get_attribute_as_boolean("binariser"))
     cv::threshold(A, A, 128, 255, cv::THRESH_OTSU);
@@ -128,7 +128,7 @@ int DemoSqueletisation::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &outp
     output.nout = 1;
     output.names[0] = "Squelitisation";
     output.images[0] = input.images[0].clone();
-    output.images[0].setTo(Scalar(0,0,255), squelette);
+    output.images[0].setTo(cv::Scalar(0,0,255), squelette);
   }
 
   return 0;

@@ -33,8 +33,8 @@ HDRDemo::HDRDemo()
 
 int HDRDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
-  Ptr<MergeMertens> merge_mertens = createMergeMertens();
-  Mat tmp, tmp2;
+  cv::Ptr<cv::MergeMertens> merge_mertens = cv::createMergeMertens();
+  cv::Mat tmp, tmp2;
   merge_mertens->process(input.images, tmp);
   tmp.convertTo(tmp2, CV_8UC3, 255, 0);
   output.images[0] = tmp2;

@@ -20,7 +20,7 @@ void test_rotation(cv::Mat &I0, float angle, float echelle)
   uint16_t sx = sz.width, sy = sz.height;
   cv::Mat R = cv::getRotationMatrix2D(centre, angle, echelle);
   cv::warpAffine(I0, I1, R, I0.size());
-  //Ig = Ig(Rect(sx/4,sy/4,sx/2,sy/2));
+  //Ig = Ig(cv::Rect(sx/4,sy/4,sx/2,sy/2));
   //output.images[idx++] = Ig;
   float ad, ed;
   ocvext::detection_rotation_echelle(I0, I1, ad, ed);
@@ -56,7 +56,7 @@ int main(int argc, const char **argv)
 
 
   I0.convertTo(I0, CV_32F);
-  cv::cvtColor(I0, I0, CV_BGR2GRAY);
+  cv::cvtColor(I0, I0, cv::COLOR_BGR2GRAY);
   //test_rotation(I0, 0.0, 1.0);
   //test_rotation(I0, 10.0, 1.0);
   //test_rotation(I0, 25.0, 1.0);

@@ -12,7 +12,7 @@ int IFTDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
   cv::Mat I, O, mag;
   input.mask.convertTo(I, CV_32F);
-  //cv::cvtColor(I, I, CV_BGR2GRAY);
+  //cv::cvtColor(I, I, cv::COLOR_BGR2GRAY);
   ocvext::dft_shift(I);
   cv::dft(I, O, cv::DFT_COMPLEX_OUTPUT);
 
@@ -49,7 +49,7 @@ DFTDemo::DFTDemo()
 
 int DFTDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
-  Mat Ig, padded;                            //expand input image to optimal size
+  cv::Mat Ig, padded;                            //expand input image to optimal size
 
   float angle = input.model.get_attribute_as_float("angle");
   bool fenetrage = input.model.get_attribute_as_boolean("fenetrage");
@@ -59,7 +59,7 @@ int DFTDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   int source = input.model.get_attribute_as_int("source");
   int periode = input.model.get_attribute_as_int("dft-sin/periode");
 
-  cvtColor(input.images[0], Ig, CV_BGR2GRAY);
+  cvtColor(input.images[0], Ig, cv::COLOR_BGR2GRAY);
 
   if(source == 1)
   {
@@ -104,7 +104,7 @@ int DFTDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
     uint16_t sx = sz.width, sy = sz.height;
     cv::Mat R = cv::getRotationMatrix2D(centre, angle, 1.0);
     cv::warpAffine(Ig, Ig, R, Ig.size());
-    Ig = Ig(Rect(sx/4,sy/4,sx/2,sy/2));
+    Ig = Ig(cv::Rect(sx/4,sy/4,sx/2,sy/2));
     //output.images[idx++] = Ig;
   }
 
@@ -114,12 +114,12 @@ int DFTDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   int n = getOptimalDFTSize( Ig.cols ); // on the border add zero values
   copyMakeBorder(Ig, padded, 0, m - Ig.rows, 0, n - Ig.cols, BORDER_CONSTANT, Scalar::all(0));
 
-  Mat planes[] = {Mat_<float>(padded), Mat::zeros(padded.size(), CV_32F)};
+  cv::Mat planes[] = {Mat_<float>(padded), cv::Mat::zeros(padded.size(), CV_32F)};
 
   merge(planes, 2, complexI);         // Add to the expanded another plane with zeros
   */
 
-  Mat plans[2], complexI, mag;
+  cv::Mat plans[2], complexI, mag;
   cv::dft(Ig, complexI, cv::DFT_COMPLEX_OUTPUT);
 
   cv::split(complexI, plans);
@@ -131,7 +131,7 @@ int DFTDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   if(decalage_dc)
     ocvext::dft_shift(mag);
 
-  cv::normalize(mag, mag, 0, 255, NORM_MINMAX);
+  cv::normalize(mag, mag, 0, 255,cv::NORM_MINMAX);
   output.images[1] = mag;
   //output.nout = idx;
 
@@ -155,7 +155,7 @@ int DemoDetectionTranslation::proceed(OCVDemoItemInput &input, OCVDemoItemOutput
   cv::Mat I, O;
   uint16_t idx = 0;
 
-  //cv::cvtColor(input.images[0], I, CV_BGR2GRAY);
+  //cv::cvtColor(input.images[0], I, cv::COLOR_BGR2GRAY);
   I = input.images[0].clone();
 
   output.names[idx] = "Image";
@@ -193,7 +193,7 @@ int DemoDetectionTranslation::proceed(OCVDemoItemInput &input, OCVDemoItemOutput
 int DemoDetectionRotation::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
   cv::Mat I, mag, O;
-  cv::cvtColor(input.images[0], I, CV_BGR2GRAY);
+  cv::cvtColor(input.images[0], I, cv::COLOR_BGR2GRAY);
   I.convertTo(I, CV_32F);
 
   float echelle = input.model.get_attribute_as_float("echelle");
@@ -214,17 +214,17 @@ int DemoDetectionRotation::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &o
     R.at<double>(0,2) = dx;
     R.at<double>(1,2) = dy;
     cv::warpAffine(I, I, R, I.size());
-    //I = I(Rect(sx/4,sy/4,sx/2,sy/2));
+    //I = I(cv::Rect(sx/4,sy/4,sx/2,sy/2));
     output.names[idx] = "Rotation";
     output.images[idx++] = I;
   }
 
   cv::Mat F, plans[2];
-  cv::dft(I, F, DFT_COMPLEX_OUTPUT, I.rows);
+  cv::dft(I, F, cv::DFT_COMPLEX_OUTPUT, I.rows);
   cv::split(F, plans);
   cv::magnitude(plans[0], plans[1], mag);
 
-  mag += Scalar::all(1);                    // switch to logarithmic scale
+  mag += cv::Scalar::all(1);                    // switch to logarithmic scale
   cv::log(mag, mag);
 
   ocvext::dft_shift(mag);
@@ -252,7 +252,7 @@ DemoSousSpectrale::DemoSousSpectrale()
 static void sousstraction_spectrale_gs(cv::Mat &I, cv::Mat &O, cv::Mat &mag, cv::Mat &masque, float seuil)
 {
   cv::Mat F, plans[2];
-  cv::dft(I, F, DFT_COMPLEX_OUTPUT, I.rows);
+  cv::dft(I, F, cv::DFT_COMPLEX_OUTPUT, I.rows);
 
   //infos("F: cols=%d, rows=%d, type=%d, nchn=%d", F.cols, F.rows, F.type(), F.channels());
 
@@ -264,7 +264,7 @@ static void sousstraction_spectrale_gs(cv::Mat &I, cv::Mat &O, cv::Mat &mag, cv:
 
   F.setTo(0.0, masque);
 
-  cv::dft(F, O, cv::DFT_INVERSE + cv::DFT_SCALE + DFT_REAL_OUTPUT, I.rows);// + K_spatial[i].rows / 2);
+  cv::dft(F, O, cv::DFT_INVERSE + cv::DFT_SCALE + cv::DFT_REAL_OUTPUT, I.rows);// + K_spatial[i].rows / 2);
 
   cv::normalize(O,O,0,255,cv::NORM_MINMAX);
 }
@@ -316,7 +316,7 @@ int DemoDetectionPeriode::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &ou
   float zoom = input.model.get_attribute_as_int("zoom") / 100.0;
 
   cv::Mat Ig;
-  cvtColor(input.images[0], Ig, CV_BGR2GRAY);
+  cvtColor(input.images[0], Ig, cv::COLOR_BGR2GRAY);
 
   Ig.convertTo(Ig, CV_32F);
 
@@ -380,7 +380,7 @@ int DemoDetectionPeriode::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &ou
 
   ocvext::dft_shift(mag);
 
-  cv::normalize(mag, mag, 0, 255, NORM_MINMAX);
+  cv::normalize(mag, mag, 0, 255,cv::NORM_MINMAX);
   output.images[0] = mag;
 
 

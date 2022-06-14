@@ -42,7 +42,7 @@ StereoCalResultats stereo_cal;
 class MatText
 {
 public:
-  MatText(Mat I)
+  MatText(cv::Mat I)
   {
     this->I = I;
     x = 0; y = 25;
@@ -94,15 +94,15 @@ private:
       return;
     int baseLine;
     double tscale = 2.0;
-    auto font = FONT_HERSHEY_COMPLEX_SMALL;
-    Size si =  getTextSize(s, font, tscale, 1.2, &baseLine);
+    auto font = cv::FONT_HERSHEY_COMPLEX_SMALL;
+    cv::Size si =  getTextSize(s, font, tscale, 1.2, &baseLine);
     putText(I, s,
-            Point(x, y),
+            cv::Point(x, y),
             font,
             tscale,
-            Scalar(255,255,255),
+            cv::Scalar(255,255,255),
             1.2,
-            CV_AA);
+            cv::LINE_AA);
     last_dy = (last_dy > (si.height + 2)) ? last_dy : (si.height + 2);
     x += si.width;
     if(x >= (unsigned int) I.cols)
@@ -111,7 +111,7 @@ private:
       y += si.height + 2;
     }
   }
-  Mat I;
+  cv::Mat I;
   uint32_t x, y;
   int last_dy;
 };
@@ -144,7 +144,7 @@ int StereoCalDemo::lookup_corners(cv::Mat &I,
   O = I.clone();
 
   bool found = cv::findChessboardCorners(I, dim_damier, coins,
-      CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
+    cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_NORMALIZE_IMAGE);
 
   //trace_verbeuse("Image %d: trouvé %d coins.", k, coins.size());
 
@@ -192,12 +192,13 @@ int StereoCalDemo::lookup_corners(cv::Mat &I,
     return -1;
   }
   cv::Mat gris;
-  cv::cvtColor(I, gris, CV_BGR2GRAY);
-  cv::cornerSubPix(gris, coins, Size(11,11), Size(-1,-1),
-                   TermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 30, 0.01));
+  cv::cvtColor(I, gris, cv::COLOR_BGR2GRAY);
+  cv::cornerSubPix(gris, coins, cv::Size(11,11), cv::Size(-1,-1),
+                   cv::TermCriteria(cv::TermCriteria::Type::MAX_ITER + cv::TermCriteria::Type::EPS, 30, 
+0.01));
 
   // Dessin des coins
-  cv::drawChessboardCorners(O, dim_damier, Mat(coins), found);
+  cv::drawChessboardCorners(O, dim_damier, cv::Mat(coins), found);
 
   return 0;
 }
@@ -328,19 +329,19 @@ int StereoCalDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 
   // Initialisation des matrices de caméra (identité)
   for(auto i = 0u; i < 2; i++)
-    stereo_cal.matrices_cameras[i] = Mat::eye(3, 3, CV_64F);
+    stereo_cal.matrices_cameras[i] = cv::Mat::eye(3, 3, CV_64F);
 
   float rms = cv::stereoCalibrate(points_obj, points_img[0], points_img[1],
       stereo_cal.matrices_cameras[0], stereo_cal.dcoefs[0],
       stereo_cal.matrices_cameras[1], stereo_cal.dcoefs[1],
       dim_img,
       stereo_cal.R, stereo_cal.T, stereo_cal.E, stereo_cal.F,
-      CV_CALIB_FIX_ASPECT_RATIO |
-      CV_CALIB_ZERO_TANGENT_DIST |
-      //CV_CALIB_FIX_FOCAL_LENGTH |
-      CV_CALIB_SAME_FOCAL_LENGTH |
-      CV_CALIB_RATIONAL_MODEL |
-      CV_CALIB_FIX_K3 | CV_CALIB_FIX_K4 | CV_CALIB_FIX_K5);
+      cv::CALIB_FIX_ASPECT_RATIO |
+      cv::CALIB_ZERO_TANGENT_DIST |
+      //cv::CALIB_FIX_FOCAL_LENGTH |
+      cv::CALIB_SAME_FOCAL_LENGTH |
+      cv::CALIB_RATIONAL_MODEL |
+      cv::CALIB_FIX_K3 | cv::CALIB_FIX_K4 | cv::CALIB_FIX_K5);
 
   trace_verbeuse("Erreur RMS calibration: %.3f.", (float) rms);
 
@@ -350,7 +351,7 @@ int StereoCalDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
       stereo_cal.rectif_R[0], stereo_cal.rectif_R[1],
       stereo_cal.rectif_P[0], stereo_cal.rectif_P[1],
       stereo_cal.Q,
-      CALIB_ZERO_DISPARITY,
+      cv::CALIB_ZERO_DISPARITY,
       1 // 0 : Seulement les pixels valides sont visibles,
       // 1 : tous les pixels (y compris noirs) sont visibles
       );
@@ -385,11 +386,11 @@ static void rectification(const cv::Mat &I0, const cv::Mat &I1,
   cv::remap(I0, O0,
             stereo_cal.rmap[0][0],
             stereo_cal.rmap[0][1],
-            CV_INTER_LINEAR);
+            cv::INTER_LINEAR);
   cv::remap(I1, O1,
             stereo_cal.rmap[1][0],
             stereo_cal.rmap[1][1],
-            CV_INTER_LINEAR);
+            cv::INTER_LINEAR);
 }
 
 int RectificationDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
@@ -430,7 +431,7 @@ void EpiDemo::raz()
 void EpiDemo::on_mouse(int x, int y, int evt, int wnd)
 {
   trace_verbeuse("epi demo souris %d, %d.", x, y);
-  Point2f pt(x,y);
+  cv::Point2f pt(x,y);
   points[wnd].push_back(pt);
   OCVDemoItemRefresh e;
   CProvider<OCVDemoItemRefresh>::dispatch(e);
@@ -473,7 +474,7 @@ int EpiDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
                cv::Point(0, -epilignes[i][2]/epilignes[i][1]),
                cv::Point(sx,-(epilignes[i][2]+epilignes[i][0]*sx)/epilignes[i][1]),
                color);
-      cv::circle(output.images[k], points[k][i], 3, color, -1, CV_AA);
+      cv::circle(output.images[k], points[k][i], 3, color, -1, cv::LINE_AA);
     }
   }
   return 0;
@@ -516,13 +517,13 @@ int DispMapDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
       rectification(I[0], I[1], I[0], I[1]);
   }
 
-  Ptr<StereoMatcher> matcher;
+  cv::Ptr<cv::StereoMatcher> matcher;
 
   int sel = input.model.get_attribute_as_int("sel");
 
   if(sel == 0)
   {
-    auto sb = StereoBM::create();
+    auto sb = cv::StereoBM::create();
     // Parameters below from Opencv/samples/stereo_match.cpp
     sb->setPreFilterCap(31);
     int bsize = input.model.get_attribute_as_int("bm/taille-bloc");
@@ -539,17 +540,17 @@ int DispMapDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
     matcher = sb;
 
     // StereoBM ne supporte que des images en niveaux de gris
-    cvtColor(I[0], I[0], CV_BGR2GRAY);
-    cvtColor(I[1], I[1], CV_BGR2GRAY);
+    cvtColor(I[0], I[0], cv::COLOR_BGR2GRAY);
+    cvtColor(I[1], I[1], cv::COLOR_BGR2GRAY);
   }
   else if(sel == 1)
   {
     // int minDisparity, int numDisparities, int blockSize,
-    matcher = StereoSGBM::create(0, 16 * 100, 7);
+    matcher = cv::StereoSGBM::create(0, 16 * 100, 7);
   }
 
 
-  Mat disp, disp8, dispf;
+  cv::Mat disp, disp8, dispf;
 
   matcher->compute(I[0], I[1], disp);
 
@@ -576,7 +577,7 @@ int DispMapDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   }*/
 
 
-  normalize(disp, disp8, 0, 255, CV_MINMAX, CV_8U);
+  normalize(disp, disp8, 0, 255, cv::NORM_MINMAX, CV_8U);
   output.images[0] = disp8;
   output.names[0] = utils::langue.get_item("disp-map");
 
@@ -592,9 +593,9 @@ int DispMapDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
     printf("im3d: %d * %d: im3d[..] = ", im3d.cols, im3d.rows);//%f, %f, %f.",
         //);//, im3d.at<Vec3f>(50,50)[0],
 //        , im3d.at<Vec3f>(50,50)[0], , im3d.at<Vec3f>(50,50)[0]);
-    std::cout << im3d.at<Vec3f>(50,50) << std::endl;
-    std::cout << im3d.at<Vec3f>(51,50) << std::endl;
-    std::cout << im3d.at<Vec3f>(100,50) << std::endl;
+    std::cout << im3d.at<cv::Vec3f>(50,50) << std::endl;
+    std::cout << im3d.at<cv::Vec3f>(51,50) << std::endl;
+    std::cout << im3d.at<cv::Vec3f>(100,50) << std::endl;
 
     cv::mixChannels(&im3d, 1, &z, 1, pairs, 1);
 
@@ -605,14 +606,14 @@ int DispMapDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
     float zmax = input.model.get_attribute_as_float("zmax");
 
     auto mask = z > zmax;
-    z.setTo(Scalar(zmax), mask);
+    z.setTo(cv::Scalar(zmax), mask);
 
 
 
     z = zmax - z;
 
     cv::Mat z8;
-    normalize(z, z8, 0, 255, CV_MINMAX, CV_8U);
+    normalize(z, z8, 0, 255, cv::NORM_MINMAX, CV_8U);
     output.images[0] = z;
     output.names[0] = utils::langue.get_item("prof");
   }
@@ -637,18 +638,18 @@ CamCalDemo::CamCalDemo()
 
 int CamCalDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
-  Mat Ig;
+  cv::Mat Ig;
   int sel = input.model.get_attribute_as_int("sel");
   int bw = input.model.get_attribute_as_int("bw");
   int bh = input.model.get_attribute_as_int("bh");
 
 
 
-  Size board_size(bw,bh);
-  std::vector<std::vector<Point2f>> imagePoints;
-  std::vector<Point2f> pointbuf;
+  cv::Size board_size(bw,bh);
+  std::vector<std::vector<cv::Point2f>> imagePoints;
+  std::vector<cv::Point2f> pointbuf;
 
-  cvtColor(input.images[0], Ig, CV_BGR2GRAY);
+  cvtColor(input.images[0], Ig, cv::COLOR_BGR2GRAY);
 
 
   output.images[2] = cv::Mat(/*Ig.size()*/cv::Size(480,640), CV_8UC3);
@@ -658,78 +659,80 @@ int CamCalDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   if(sel == 0)
   {
     trouve = cv::findChessboardCorners(Ig, board_size, pointbuf,
-      CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_FAST_CHECK | CALIB_CB_NORMALIZE_IMAGE);
+                                           cv::CALIB_CB_ADAPTIVE_THRESH |
+                                           cv::CALIB_CB_FAST_CHECK      | 
+                                           cv::CALIB_CB_NORMALIZE_IMAGE);
     // improve the found corners' coordinate accuracy
      if(trouve)
-       cv::cornerSubPix(Ig, pointbuf, Size(11,11),
-         Size(-1,-1), TermCriteria( TermCriteria::EPS+TermCriteria::COUNT, 30, 0.1 ));
+       cv::cornerSubPix(Ig, pointbuf, cv::Size(11,11),
+         cv::Size(-1,-1), cv::TermCriteria( cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1 ));
   }
   else if(sel == 1)
     trouve = cv::findCirclesGrid(Ig, board_size, pointbuf );
   else
-    trouve = cv::findCirclesGrid(Ig, board_size, pointbuf, CALIB_CB_ASYMMETRIC_GRID );
+    trouve = cv::findCirclesGrid(Ig, board_size, pointbuf, cv::CALIB_CB_ASYMMETRIC_GRID );
 
 
-  //cvtColor(I, O[0], CV_GRAY2BGR);
+  //cvtColor(I, O[0], cv::COLOR_GRAY2BGR);
 
-  Mat Ior = input.images[0].clone();
+  cv::Mat Ior = input.images[0].clone();
   output.images[0] = Ior.clone();
   if(trouve)
-   cv::drawChessboardCorners(output.images[0], board_size, Mat(pointbuf), trouve);
+   cv::drawChessboardCorners(output.images[0], board_size, cv::Mat(pointbuf), trouve);
 
   trace_majeure("Trouvé %d coins (found = %d).",
       pointbuf.size(), (int) trouve);
 
   if(trouve)
   {
-    Mat distCoeffs;
-    Mat cameraMatrix;
-    cameraMatrix = Mat::eye(3, 3, CV_64F);
+    cv::Mat distCoeffs;
+    cv::Mat cameraMatrix;
+    cameraMatrix = cv::Mat::eye(3, 3, CV_64F);
     //if( flags & CALIB_FIX_ASPECT_RATIO )
       //  cameraMatrix.at<double>(0,0) = aspectRatio;
-    distCoeffs = Mat::zeros(8, 1, CV_64F);
+    distCoeffs = cv::Mat::zeros(8, 1, CV_64F);
 
     float square_size = 1;
 
-    std::vector<std::vector<Point3f> > objectPoints(1);
-    std::vector<Point3f> &corners = objectPoints[0];
+    std::vector<std::vector<cv::Point3f> > objectPoints(1);
+    std::vector<cv::Point3f> &corners = objectPoints[0];
     if(sel <= 1)
     {
       for( int i = 0; i < board_size.height; i++ )
             for( int j = 0; j < board_size.width; j++ )
-                corners.push_back(Point3f(float(j*square_size),
+                corners.push_back(cv::Point3f(float(j*square_size),
                                           float(i*square_size), 0));
     }
     else
     {
       for( int i = 0; i < board_size.height; i++ )
           for( int j = 0; j < board_size.width; j++ )
-              corners.push_back(Point3f(float((2*j + i % 2)*square_size),
+              corners.push_back(cv::Point3f(float((2*j + i % 2)*square_size),
                                         float(i*square_size), 0));
     }
 
     imagePoints.push_back(pointbuf);
     objectPoints.resize(imagePoints.size(),objectPoints[0]);
 
-    std::vector<Mat> rvecs, tvecs;
+    std::vector<cv::Mat> rvecs, tvecs;
     // Fonction obsoléte ?
     double rms = cv::calibrateCamera(objectPoints,
                                      imagePoints, Ior.size(),
                     cameraMatrix, distCoeffs, rvecs, tvecs,
-                    CALIB_FIX_K4 | CALIB_FIX_K5);
+                    cv::CALIB_FIX_K4 | cv::CALIB_FIX_K5);
     infos("RMS error reported by calibrateCamera: %g\n", rms);
 
 
     cv::undistort(Ior, output.images[1], cameraMatrix, distCoeffs);
 
-    Size sz = Ior.size();
-    sz.height = sz.width = max(sz.width, sz.height);
-    sz.height = sz.width = max(sz.width, 500);
+    cv::Size sz = Ior.size();
+    sz.height = sz.width = cv::max(sz.width, sz.height);
+    sz.height = sz.width = cv::max(sz.width, 500);
 
     output.images[2] = cv::Mat::zeros(sz, CV_8UC3);
 
     double fovx, fovy, focal, ar;
-    Point2d ppoint;
+    cv::Point2d ppoint;
     cv::calibrationMatrixValues(cameraMatrix, Ior.size(), 1, 1, fovx, fovy, focal, ppoint, ar);
 
 
@@ -771,30 +774,30 @@ int DemoLocalisation3D::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &outp
     return -1;
   }
 
-  Point balle_loc[2];
+  cv::Point balle_loc[2];
 
   output.nout = 3;
 
   for(auto k = 0u; k < 2; k++)
   {
-    Mat &I = input.images[k];
-    Mat tsv, masque;
-    cvtColor(I, tsv, CV_BGR2HSV);
-    inRange(tsv, Scalar(18, 100, 128),
-            Scalar(30, 255, 255), masque);
-    Mat dst;
-    cv::distanceTransform(masque, dst, CV_DIST_L2, 3);
+    cv::Mat &I = input.images[k];
+    cv::Mat tsv, masque;
+    cvtColor(I, tsv, cv::COLOR_BGR2HSV);
+    inRange(tsv, cv::Scalar(18, 100, 128),
+            cv::Scalar(30, 255, 255), masque);
+    cv::Mat dst;
+    cv::distanceTransform(masque, dst,cv::DistanceTypes::DIST_L2, 3);
     cv::minMaxLoc(dst, nullptr, nullptr, nullptr, &balle_loc[k]);
 
     infos("Balle loc[%d]: %d, %d.", balle_loc[k].x, balle_loc[k].y);
 
-    Mat O = input.images[k].clone();
+    cv::Mat O = input.images[k].clone();
 
     // Position de la balle détectée
-    cv::line(O, balle_loc[0] - Point(5,0), balle_loc[0] + Point(5,0),
-             Scalar(0,0,255), 1);
-    cv::line(O, balle_loc[0] - Point(0,5), balle_loc[0] + Point(0,5),
-             Scalar(0,0,255), 1);
+    cv::line(O, balle_loc[0] - cv::Point(5,0), balle_loc[0] + cv::Point(5,0),
+             cv::Scalar(0,0,255), 1);
+    cv::line(O, balle_loc[0] - cv::Point(0,5), balle_loc[0] + cv::Point(0,5),
+             cv::Scalar(0,0,255), 1);
     output.images[k] = O;
   }
 
@@ -806,8 +809,8 @@ int DemoLocalisation3D::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &outp
   cv::Point2f loc_rectifiee[2];
   for(auto k = 0u; k < 2; k++)
   {
-    Mat_<Point2f> p1(1,1), p2(1,1);
-    p1(0) = Point2f(balle_loc[0].x,balle_loc[0].y);
+    cv::Mat_<cv::Point2f> p1(1,1), p2(1,1);
+    p1(0) = cv::Point2f(balle_loc[0].x,balle_loc[0].y);
     cv::undistortPoints(p1,
          p2,
          stereo_cal.matrices_cameras[k],
@@ -830,7 +833,7 @@ int DemoLocalisation3D::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &outp
   p0.z = x_dist;
   //p0[3] = 0;
 
-  Mat_<Point3f> mp0(1,1), mp1(1,1);
+  cv::Mat_<cv::Point3f> mp0(1,1), mp1(1,1);
 
   mp0(0) = p0;
   cv::perspectiveTransform(mp0, mp1, stereo_cal.Q); // ????
@@ -843,12 +846,12 @@ int DemoLocalisation3D::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &outp
   cv::remap(input.images[0], O,
             stereo_cal.rmap[0][0],
             stereo_cal.rmap[0][1],
-            CV_INTER_LINEAR);*/
-  Mat O = input.images[0];
+            cv::INTER_LINEAR);*/
+  cv::Mat O = input.images[0];
 
   // Juste un test : reprojection du point 3d vers l'image 0
   // ==> On devrait avoir à peu près les coordonnées du point détecté.
-  Mat_<Point2f> mp2; // Coordonnées dans l'image 0
+  cv::Mat_<cv::Point2f> mp2; // Coordonnées dans l'image 0
   cv::projectPoints(mp1,
           stereo_cal.R, stereo_cal.T,
           stereo_cal.matrices_cameras[0],

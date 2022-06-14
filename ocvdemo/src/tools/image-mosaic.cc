@@ -25,8 +25,6 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "ocvdemo.hpp"
 
-using namespace cv;
-
 // Adapté d'après http://code.opencv.org/projects/opencv/wiki/DisplayManyImages
 
 ImageMosaique::ImageMosaique()
@@ -72,7 +70,7 @@ void ImageMosaique::update_image(int index, const cv::Mat &img)
   cv::Mat roi(disp_img, rect);
 
 
-  Mat im = img.clone();
+  cv::Mat im = img.clone();
 
   while((im.cols >= 2 * roi.size().width) || (im.rows >= 2 * roi.size().height))
     pyrDown(im, im);
@@ -188,7 +186,7 @@ int ImageMosaique::show_multiple_images(std::string title,
 
   // Create a new 3 channel image
   disp_img.create(cv::Size(W, H), CV_8UC3);
-  disp_img.setTo(Scalar(0));
+  disp_img.setTo(cv::Scalar(0));
 
 
   // Loop for nArgs number of arguments
@@ -227,7 +225,7 @@ int ImageMosaique::show_multiple_images(std::string title,
     if(nimages > 1)
       // Resize the input image and copy the it to the Single Big Image
     {
-      Mat im = img.clone();
+     cv::Mat im = img.clone();
 
       while((im.cols >= 2 * roi.size().width) || (im.rows >= 2 * roi.size().height))
         pyrDown(im, im);
@@ -240,24 +238,24 @@ int ImageMosaique::show_multiple_images(std::string title,
 
 
     img_pos.push_back(rect);
-    img_sizes.push_back(Size(img.cols, img.rows));
+    img_sizes.push_back(cv::Size(img.cols, img.rows));
 
     if(show_deco && (titles[i].size() > 0))
     {
       std::string texte = titles[i];
       int baseLine;
       double tscale = 1.0;
-      auto font = FONT_HERSHEY_COMPLEX_SMALL;
-      Size si =  getTextSize(texte, font, tscale, 1.2, &baseLine);
+      auto font = cv::FONT_HERSHEY_COMPLEX_SMALL;
+      cv::Size si =  getTextSize(texte, font, tscale, 1.2, &baseLine);
       ///int dx = (x/scale);
       int xc = m + (x/(2*scale));
       putText(disp_img, texte,
-          Point(xc - si.width / 2, n + y / scale + 1.5 * si.height),
+          cv::Point(xc - si.width / 2, n + y / scale + 1.5 * si.height),
           font,
           tscale,
-          Scalar(255,255,255),
+          cv::Scalar(255,255,255),
           1.2,
-          CV_AA);
+          cv::LINE_AA);
     }
   }
 
@@ -270,7 +268,7 @@ int ImageMosaique::show_multiple_images(std::string title,
   if(model.get_attribute_as_boolean("force-taille-sortie"))
   {
     trace_verbeuse("Forçage taille...");
-    cv::namedWindow(title.c_str(), CV_WINDOW_KEEPRATIO | CV_WINDOW_NORMAL);
+    cv::namedWindow(title.c_str(), cv::WINDOW_KEEPRATIO | cv::WINDOW_NORMAL);
     cv::resizeWindow(title.c_str(),
                      model.get_attribute_as_int("sortie-sx"),
                      model.get_attribute_as_int("sortie-sy"));
@@ -281,7 +279,7 @@ int ImageMosaique::show_multiple_images(std::string title,
     if(nimages == 1)
     {
       trace_majeure("KEEP RATIO");
-      cv::namedWindow(title.c_str(), CV_WINDOW_KEEPRATIO | CV_WINDOW_NORMAL);
+      cv::namedWindow(title.c_str(), cv::WINDOW_KEEPRATIO | cv::WINDOW_NORMAL);
       cv::resizeWindow(title.c_str(), lst[0].cols, lst[0].rows);
     }
     else
@@ -302,7 +300,7 @@ int ImageMosaique::show_multiple_images(std::string title,
   if(!callback_init_ok)
   {
     trace_verbeuse("cbinit");
-    setMouseCallback(title, ::mouse_callback, this);
+    cv::setMouseCallback(title, ::mouse_callback, this);
     callback_init_ok = true;
   }
 

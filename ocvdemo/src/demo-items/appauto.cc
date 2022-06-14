@@ -30,11 +30,10 @@
 #include <cmath>
 #include <opencv2/opencv.hpp>
 
-using namespace cv;
 using namespace cv::ml;
 
 
-Ptr<StatModel> creation_classifieur_svm(utils::model::Node &model)
+cv::Ptr<StatModel> creation_classifieur_svm(utils::model::Node &model)
 {
   float gamma = model.get_attribute_as_float("svm/svm-rbf/gamma");
   if(gamma == 0)
@@ -49,8 +48,9 @@ Ptr<StatModel> creation_classifieur_svm(utils::model::Node &model)
   //trace_verbeuse("Gamma = %f, C = %f, kernel = %d.", gamma, C, kernel);
 
   // A FAIRE : créer un classifieur SVM avec noyau RBF
-  Ptr<SVM> svm = SVM::create();
-  svm->setTermCriteria(TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 1000, 1e-3));
+  cv::Ptr<SVM> svm = SVM::create();
+  svm->setTermCriteria(cv::TermCriteria(  cv::TermCriteria::Type::MAX_ITER | cv::TermCriteria::Type::EPS,
+                                          1000, 1e-3));
   svm->setGamma(gamma);
   svm->setKernel((SVM::KernelTypes) kernel);//SVM::RBF);
   svm->setNu(0.5);
@@ -62,9 +62,9 @@ Ptr<StatModel> creation_classifieur_svm(utils::model::Node &model)
 }
 
 
-Ptr<StatModel> creation_classifieur_knn(utils::model::Node &model)
+cv::Ptr<StatModel> creation_classifieur_knn(utils::model::Node &model)
 {
-  Ptr<KNearest> knearest = KNearest::create();
+  cv::Ptr<KNearest> knearest = KNearest::create();
   knearest->setDefaultK(model.get_attribute_as_int("kppv/K"));
   knearest->setIsClassifier(true);
   //knearest->setAlgorithmType(KNearest::COMPRESSED_INPUT);//KDTREE);//:BRUTE_FORCE);
@@ -73,10 +73,10 @@ Ptr<StatModel> creation_classifieur_knn(utils::model::Node &model)
   return knearest;
 }
 
-Ptr<StatModel> creation_classifieur_adaboost(utils::model::Node &model)
+cv::Ptr<StatModel> creation_classifieur_adaboost(utils::model::Node &model)
 {
   // A FAIRE : créer un classifieur Adaboost
-  Ptr<Boost> res = Boost::create();
+  cv::Ptr<Boost> res = Boost::create();
   res->setMaxCategories(model.get_attribute_as_int("nclasses"));
   res->setMaxDepth(1);
   return res;
@@ -100,15 +100,15 @@ int DemoAppAuto::proceed(OCVDemoItemInput &entree, OCVDemoItemOutput &sortie)
   uint32_t n = entree.model.get_attribute_as_int("napp"),
       ntraits = 2u;
   float bruit = entree.model.get_attribute_as_float("bruit");
-  Mat mat_entrainement(Size(ntraits,n), CV_32F);
+  cv::Mat mat_entrainement(cv::Size(ntraits,n), CV_32F);
 
   uint32_t sx = 512, sy = 512;
   uint32_t sx2 = 32, sy2 = 32;
-  Mat O(Size(sx, sy), CV_8UC3, Scalar(255,255,255));
-  Mat O2(Size(sx2, sy2), CV_8UC3);
+  cv::Mat O(cv::Size(sx, sy), CV_8UC3, cv::Scalar(255,255,255));
+  cv::Mat O2(cv::Size(sx2, sy2), CV_8UC3);
 
-  RNG rng;
-  Mat labels(Size(1,n), CV_32S);
+  cv::RNG rng;
+  cv::Mat labels(cv::Size(1,n), CV_32S);
   auto ptr = labels.ptr<int>();
 
   auto *optr = mat_entrainement.ptr<float>();
@@ -124,11 +124,11 @@ int DemoAppAuto::proceed(OCVDemoItemInput &entree, OCVDemoItemOutput &sortie)
   trace_verbeuse("Partition du plan : %d * %d.", n1, n2);
 
 # define MAX_CLASSES 4
-  Scalar couleurs[MAX_CLASSES];
-  couleurs[0] = Scalar(255,0,0);
-  couleurs[1] = Scalar(0,255,0);
-  couleurs[2] = Scalar(0,0,255);
-  couleurs[3] = Scalar(255,0,255);
+  cv::Scalar couleurs[MAX_CLASSES];
+  couleurs[0] = cv::Scalar(255,0,0);
+  couleurs[1] = cv::Scalar(0,255,0);
+  couleurs[2] = cv::Scalar(0,0,255);
+  couleurs[3] = cv::Scalar(255,0,255);
 
   for(auto i = 0u; i < n; i++)
   {
@@ -163,8 +163,8 @@ int DemoAppAuto::proceed(OCVDemoItemInput &entree, OCVDemoItemOutput &sortie)
     int xi = sx/2 + x * sx / 2;
     int yi = sy/2 + y * sy / 2;
 
-    cv::line(O, Point(xi-dl,yi), Point(xi+dl,yi), couleurs[classe], 1, CV_AA);
-    cv::line(O, Point(xi,yi-dl), Point(xi,yi+dl), couleurs[classe], 1, CV_AA);
+    cv::line(O, cv::Point(xi-dl,yi), cv::Point(xi+dl,yi), couleurs[classe], 1, cv::LINE_AA);
+    cv::line(O, cv::Point(xi,yi-dl), cv::Point(xi,yi+dl), couleurs[classe], 1, cv::LINE_AA);
 
     *optr++ = x;
     *optr++ = y;
@@ -188,7 +188,7 @@ int DemoAppAuto::proceed(OCVDemoItemInput &entree, OCVDemoItemOutput &sortie)
 
   trace_verbeuse("Gamma = %f, C = %f, kernel = %d.", gamma, C, kernel);
 
-  Ptr<SVM> svm = SVM::create();
+  cv::Ptr<SVM> svm = SVM::create();
   svm->setTermCriteria(TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 1000, 1e-3));
   svm->setGamma(gamma);
   svm->setKernel((SVM::KernelTypes) kernel); //SVM::RBF);
@@ -198,7 +198,7 @@ int DemoAppAuto::proceed(OCVDemoItemInput &entree, OCVDemoItemOutput &sortie)
   svm->setType(SVM::C_SVC);
   svm->setDegree(degre);*/
 
-  Ptr<StatModel> smodel;
+  cv::Ptr<StatModel> smodel;
 
   auto sel = input.model.get_attribute_as_int("sel");
   if(sel == 0)
@@ -213,13 +213,13 @@ int DemoAppAuto::proceed(OCVDemoItemInput &entree, OCVDemoItemOutput &sortie)
   trace_verbeuse("Ok.");
 
   trace_verbeuse("Echantillonnage du plan...");
-  Vec3b *o2ptr = O2.ptr<Vec3b>();
-  Vec3b c[MAX_CLASSES];
+  cv::Vec3b *o2ptr = O2.ptr<cv::Vec3b>();
+  cv::Vec3b c[MAX_CLASSES];
   for(auto i = 0u; i < MAX_CLASSES; i++)
     for(auto j = 0u; j < 3; j++)
       c[i][j] = couleurs[i][j];
 
-  Mat traits(Size(2,1),CV_32F);
+  cv::Mat traits(cv::Size(2,1),CV_32F);
   float *tptr = traits.ptr<float>();
   for(auto y = 0u; y < sy2; y++)
   {

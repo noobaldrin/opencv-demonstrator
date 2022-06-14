@@ -70,8 +70,8 @@ public:
   VisageDemo();
   int proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output);
 private:
-  CascadeClassifier face_cascade, eyes_cascade;
-  RNG rng;
+  cv::CascadeClassifier face_cascade, eyes_cascade;
+  cv::RNG rng;
 };
 
 
@@ -82,8 +82,8 @@ public:
   int proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output);
 private:
   std::vector<std::string> cnames;
-  CascadeClassifier cascade[3];
-  RNG rng;
+  cv::CascadeClassifier cascade[3];
+  cv::RNG rng;
   bool cascade_ok;
 };
 

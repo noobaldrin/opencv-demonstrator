@@ -193,13 +193,13 @@ cv::Point detection_translation2(const cv::Mat &I0_, const cv::Mat &I1_)
     cv::Mat spectre = accu.clone();
     cv::normalize(spectre, spectre, 0, 255, cv::NORM_MINMAX);
     spectre.convertTo(spectre, CV_8U);
-    cv::cvtColor(spectre, spectre, CV_GRAY2BGR);
+    cv::cvtColor(spectre, spectre, cv::COLOR_GRAY2BGR);
     dft_shift(spectre);
     cv::Point p = max_loc;
     ocvext::dft_shift(p, spectre.size());
-    cv::line(spectre, cv::Point(spectre.cols/2-10, spectre.rows/2), cv::Point(spectre.cols/2+10, spectre.rows/2), cv::Scalar(0,255,0), 1, CV_AA);
-    cv::line(spectre, cv::Point(spectre.cols/2, spectre.rows/2-10), cv::Point(spectre.cols/2, spectre.rows/2+10), cv::Scalar(0,255,0), 1, CV_AA);
-    cv::circle(spectre, p, 10, cv::Scalar(0,0,255), 1, CV_AA);
+    cv::line(spectre, cv::Point(spectre.cols/2-10, spectre.rows/2), cv::Point(spectre.cols/2+10, spectre.rows/2), cv::Scalar(0,255,0), 1, cv::LINE_AA);
+    cv::line(spectre, cv::Point(spectre.cols/2, spectre.rows/2-10), cv::Point(spectre.cols/2, spectre.rows/2+10), cv::Scalar(0,255,0), 1, cv::LINE_AA);
+    cv::circle(spectre, p, 10, cv::Scalar(0,0,255), 1, cv::LINE_AA);
     dbg_image("accu", spectre);
   }
 
@@ -437,12 +437,12 @@ cv::Point detection_translation(const cv::Mat &I0_, const cv::Mat &I1_, bool nor
 
     cv::normalize(*spectre, *spectre, 0, 255, cv::NORM_MINMAX);
     spectre->convertTo(*spectre, CV_8U);
-    cv::cvtColor(*spectre, *spectre, CV_GRAY2BGR);
+    cv::cvtColor(*spectre, *spectre, cv::COLOR_GRAY2BGR);
     dft_shift(*spectre);
 
     cv::Point p = max_loc;
     ocvext::dft_shift(p, spectre->size());
-    cv::circle(*spectre, p, 10, cv::Scalar(0,0,255), 1, CV_AA);
+    cv::circle(*spectre, p, 10, cv::Scalar(0,0,255), 1, cv::LINE_AA);
   }
 
   if(max_loc.x > accu.cols / 2)
@@ -503,7 +503,7 @@ int estime_periode(cv::Mat &I,
     cv::log(dbg[0], dbg[0]);
     cv::normalize(dbg[0], dbg[0], 0, 255, cv::NORM_MINMAX);
     dbg[0].convertTo(dbg[0], CV_8U);
-    cv::cvtColor(dbg[0], dbg[0], CV_GRAY2BGR);
+    cv::cvtColor(dbg[0], dbg[0], cv::COLOR_GRAY2BGR);
   }
 
 
@@ -626,7 +626,7 @@ int estime_periode(cv::Mat &I,
   {
     float u, v;
     p_vers_uv(d, sx, sy, u, v);
-    cv::circle(dbg[0], cv::Point(cx, cy), u, cv::Scalar(0,0,255), 1, CV_AA);
+    cv::circle(dbg[0], cv::Point(cx, cy), u, cv::Scalar(0,0,255), 1, cv::LINE_AA);
   }
 
   return 0;

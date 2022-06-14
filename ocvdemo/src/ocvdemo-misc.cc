@@ -50,7 +50,7 @@ OCVDemoItem::OCVDemoItem()
 static void prepare_image(cv::Mat &I)
 {
   if(I.channels() == 1)
-    cv::cvtColor(I, I, CV_GRAY2BGR);
+    cv::cvtColor(I, I, cv::COLOR_GRAY2BGR);
 
   if(I.depth() == CV_32F)
     I.convertTo(I, CV_8UC3);
@@ -220,9 +220,9 @@ void OCVDemo::masque_clic(int x0, int y0)
       {
         int x = x0 + i;
         int y = y0 + j;
-        Ia.at<Vec3b>(y,x).val[0] = 255;
-        Ia.at<Vec3b>(y,x).val[1] = 255;
-        Ia.at<Vec3b>(y,x).val[2] = 255;
+        Ia.at<cv::Vec3b>(y,x).val[0] = 255;
+        Ia.at<cv::Vec3b>(y,x).val[1] = 255;
+        Ia.at<cv::Vec3b>(y,x).val[2] = 255;
         demo_en_cours->input.mask.at<unsigned char>(y,x) = 255;
       }
     }
@@ -230,9 +230,9 @@ void OCVDemo::masque_clic(int x0, int y0)
   else
   {
     // Floodfill
-    cv::Mat mymask = Mat::zeros(Ia.rows+2,Ia.cols+2,CV_8U);
-    cv::floodFill(Ia, mymask, Point(x0,y0), Scalar(255,255,255));
-    Mat roi(mymask, Rect(1,1,Ia.cols,Ia.rows));
+    cv::Mat mymask = cv::Mat::zeros(Ia.rows+2,Ia.cols+2,CV_8U);
+    cv::floodFill(Ia, mymask, cv::Point(x0,y0), cv::Scalar(255,255,255));
+    cv::Mat roi(mymask,cv::Rect(1,1,Ia.cols,Ia.rows));
     this->demo_en_cours->input.mask |= roi;
     update();
   }
@@ -501,7 +501,7 @@ void OCVDemo::maj_entree()
       {
         utils::mmi::dialogs::affiche_erreur("Erreur",
             "Impossible de charger l'image", "");
-        destroyWindow(titre_principal);
+        cv::destroyWindow(titre_principal);
         mosaique.callback_init_ok = false;
       }
     }
@@ -558,7 +558,7 @@ void OCVDemo::setup_demo(const utils::model::Node &sel)
       || (fs_racine->get_schema(id) == nullptr))
   {
     img_selecteur.hide();
-    destroyWindow(titre_principal);
+    cv::destroyWindow(titre_principal);
     mosaique.callback_init_ok = false;
     mutex_update.unlock();
     maj_bts();
@@ -596,7 +596,7 @@ void OCVDemo::setup_demo(const utils::model::Node &sel)
   //////////////////////////////////////////
 
   trace_verbeuse("update_demo()...");
-  namedWindow(titre_principal, CV_WINDOW_NORMAL);
+  namedWindow(titre_principal, cv::WINDOW_NORMAL);
   
   //en: current demo
   demo_en_cours = nullptr;
@@ -735,7 +735,7 @@ void OCVDemo::compute_Ia()
   if((demo_en_cours != nullptr) && (demo_en_cours->props.requiert_roi))
   {
     Ia = I0.clone();
-    cv::rectangle(Ia, rdi0, rdi1, Scalar(0,255,0), 3);
+    cv::rectangle(Ia, rdi0, rdi1, cv::Scalar(0,255,0), 3);
   }
   else if((demo_en_cours != nullptr) && (demo_en_cours->props.requiert_masque))
   {
@@ -959,7 +959,7 @@ bool OCVDemo::has_output()
   return sortie_en_cours;
 }
 
-Mat OCVDemo::get_current_output()
+cv::Mat OCVDemo::get_current_output()
 {
   return demo_en_cours->output.images[0];
 }

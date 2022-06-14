@@ -18,7 +18,7 @@ int DemoOCR::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 
   cv::Ptr<cv::text::BaseOCR> algo;
 
-  Ptr<cv::text::OCRHMMDecoder::ClassifierCallback> cls
+  cv::Ptr<cv::text::OCRHMMDecoder::ClassifierCallback> cls
   = cv::text::loadOCRHMMClassifierNM("OCRHMM_knn_model_data.xml");
 
 
@@ -42,7 +42,7 @@ int DemoOCR::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   algo->run(I, res, &component_rects, &component_texts);
 
   cv::Mat O = I.clone();
-  cv::putText(O, res, Point(0,0), FONT_HERSHEY_SIMPLEX, 1.0, Scalar(0,255,0), 1);
+  cv::putText(O, res, cv::Point(0,0), FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0,255,0), 1);
 
   infos("Nb rect : %d.", component_rects.size());
   infos("Texte detecte : [%s]", res.c_str());

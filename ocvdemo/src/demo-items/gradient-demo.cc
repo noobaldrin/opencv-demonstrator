@@ -35,8 +35,8 @@ ContourDemo::ContourDemo()
 int calcule_canny(const cv::Mat &I, cv::Mat &masque_canny,
                   const utils::model::Node &modele)
 {
-  Mat tmp;
-  cvtColor(I, tmp, CV_BGR2GRAY);
+  cv::Mat tmp;
+  cvtColor(I, tmp, cv::COLOR_BGR2GRAY);
 
   int seuil_methode = modele.get_attribute_as_int("seuil-methode");
   int seuil_bas     = modele.get_attribute_as_int("seuil-bas");
@@ -48,7 +48,7 @@ int calcule_canny(const cv::Mat &I, cv::Mat &masque_canny,
 
 
   if(prefiltrage)
-    blur(tmp, tmp, Size(taille_prefilt,taille_prefilt));
+    blur(tmp, tmp, cv::Size(taille_prefilt,taille_prefilt));
 
   if(seuil_methode == 1)
   {
@@ -72,7 +72,7 @@ int calcule_canny(const cv::Mat &I, cv::Mat &masque_canny,
 
 int ContourDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
-  Mat masque_canny;
+  cv::Mat masque_canny;
   calcule_canny(input.images[0], masque_canny, input.model);
 
   output.names[0] = "Canny";
@@ -80,10 +80,10 @@ int ContourDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   output.nout = 2;
 
   /*int kernel_width = 5;
-  int kernel_type = MORPH_RECT;
-  Mat K = getStructuringElement(kernel_type,
-                                      Size(2*kernel_width + 1, 2*kernel_width+1),
-                                      Point(kernel_width, kernel_width));
+  int kernel_type = cv::MORPH_REECT;
+  cv::Mat K = getStructuringElement(kernel_type,
+                                      cv::Size(2*kernel_width + 1, 2*kernel_width+1),
+                                      cv::Point(kernel_width, kernel_width));
 
 
   morphologyEx(detected_edges, detected_edges, MORPH_CLOSE, K);*/
@@ -92,25 +92,25 @@ int ContourDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 
   int type_contour = input.model.get_attribute_as_int("typcont");
 
-  int mode = RETR_EXTERNAL;
+  int mode = cv::RETR_EXTERNAL;
   if(type_contour == 1)
-    mode = RETR_TREE;
+    mode = cv::RETR_TREE;
 
   std::vector<std::vector<cv::Point> > contours;
-  std::vector<Vec4i> hierarchie;
+  std::vector<cv::Vec4i> hierarchie;
   findContours(masque_canny, contours,
                hierarchie,
                mode,
-               CHAIN_APPROX_SIMPLE,
-               Point(0,0));
+               cv::CHAIN_APPROX_SIMPLE,
+               cv::Point(0,0));
 
-  RNG rng(12345);
+  cv::RNG rng(12345);
   // Dessine les contours
-  Mat dessin = Mat::zeros(masque_canny.size(), CV_8UC3 );
+  cv::Mat dessin = cv::Mat::zeros(masque_canny.size(), CV_8UC3 );
   for(auto i = 0u; i < contours.size(); i++ )
   {
-   Scalar couleur = Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
-   drawContours(dessin, contours, i, couleur, 2, 8, hierarchie, 0, Point());
+   cv::Scalar couleur = cv::Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
+   drawContours(dessin, contours, i, couleur, 2, 8, hierarchie, 0, cv::Point());
   }
 
   output.images[1] = dessin;
@@ -125,12 +125,12 @@ NetDemo::NetDemo()
 
 int NetDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
-  Mat I32, lap;
+  cv::Mat I32, lap;
   auto I = input.images[0].clone();
   float c = input.model.get_attribute_as_float("coef");
   I.convertTo(I32, CV_32F);
   Laplacian(I, lap, CV_32F, 3);
-  Mat sharp_image_32bit = I32 - c * lap;
+  cv::Mat sharp_image_32bit = I32 - c * lap;
   sharp_image_32bit.convertTo(output.images[0], CV_8U);
   return 0;
 }
@@ -143,7 +143,7 @@ GradientDemo::GradientDemo()
 
 int GradientDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
-  Mat gx, gy, agx, agy,tmp,grad;
+  cv::Mat gx, gy, agx, agy,tmp,grad;
 
   auto model = input.model;
   auto I = input.images[0];
@@ -162,7 +162,7 @@ int GradientDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   {
     cv::Mat hsv;
     cv::Mat hsv_composantes[3];
-    cv::cvtColor(I, hsv, CV_BGR2HSV);
+    cv::cvtColor(I, hsv, cv::BGR2HSV);
     cv::split(hsv, hsv_composantes);
     I = hsv_composantes[0]; // Teinte
     masque_saturation_luminance =
@@ -174,11 +174,11 @@ int GradientDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   if((tnoyau & 1) == 0)
     tnoyau++;
 
-  //GaussianBlur(I,tmp, Size(3,3),0);
+  //GaussianBlur(I,tmp, cv::Size(3,3),0);
   if(sigma > 0)
   {
     if(sel3 == 0)
-      GaussianBlur(I,tmp, Size(0,0),sigma);
+      GaussianBlur(I,tmp, cv::Size(0,0),sigma);
     else if(sel3 == 1)
       ocvext::Deriche_blur(I, tmp, gamma);
     else
@@ -192,7 +192,7 @@ int GradientDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   bool gradient_couleur = input.model.get_attribute_as_boolean("couleur");
 
   if(preconv)
-    cvtColor(tmp,tmp,CV_BGR2GRAY);
+    cvtColor(tmp,tmp,cv::COLOR_BGR2GRAY);
 
   if(sel2 == 0)
   {
@@ -212,8 +212,8 @@ int GradientDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
     gy = cv::abs(gy);
     gx = gx / 255;
     gy = gy / 255;
-    cvtColor(gx,gx,CV_BGR2GRAY);
-    cvtColor(gy,gy,CV_BGR2GRAY);
+    cvtColor(gx,gx,cv::COLOR_BGR2GRAY);
+    cvtColor(gy,gy,cv::COLOR_BGR2GRAY);
   }
 
   if(sel == 0)
@@ -244,7 +244,7 @@ int GradientDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
     hsv[1] = cv::Mat::ones(angle.size(), CV_32F);
     hsv[2] = mag;
     cv::merge(hsv, 3, hsv2);
-    cv::cvtColor(hsv2, output.images[0], CV_HSV2BGR);
+    cv::cvtColor(hsv2, output.images[0], cv::COLOR_HSV2BGR);
     output.names[0] = "Gradient";
   }
   else
@@ -274,8 +274,8 @@ int DetFlouDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   if((taille_noyau & 1) == 0)
     taille_noyau++;
 
-  Mat tmp, lap;
-  cv::cvtColor(input.images[0], tmp, CV_BGR2GRAY);
+  cv::Mat tmp, lap;
+  cv::cvtColor(input.images[0], tmp, cv::COLOR_BGR2GRAY);
 
   cv::Laplacian(tmp, lap, CV_32F, taille_noyau, 1, 0);
 
@@ -310,7 +310,7 @@ int DetFlouDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 
   output.images[0] = res;
 
-  //cv::normalize(lap, output.images[0], 0, 255, NORM_MINMAX);
+  //cv::normalize(lap, output.images[0], 0, 255,cv::NORM_MINMAX);
   //convertScaleAbs(lap, output.images[0]); // Conversion vers CV_8U
   output.names[0] = "Laplacien";
   return 0;
@@ -333,11 +333,11 @@ int LaplaceDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   if((taille_noyau & 1) == 0)
     taille_noyau++;
 
-  Mat tmp, lap;
-  cv::cvtColor(input.images[0], tmp, CV_BGR2GRAY);
+  cv::Mat tmp, lap;
+  cv::cvtColor(input.images[0], tmp, cv::COLOR_BGR2GRAY);
 
   if(pref && (sigma > 0))
-    GaussianBlur(tmp, tmp, Size(0,0), sigma);
+    GaussianBlur(tmp, tmp, cv::Size(0,0), sigma);
 
   if(echelle < 0.01)
     echelle = 0.01;
@@ -354,7 +354,7 @@ int LaplaceDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   if(aff == 0)
     lap = cv::abs(lap);
 
-  cv::normalize(lap, output.images[0], 0, 255, NORM_MINMAX);
+  cv::normalize(lap, output.images[0], 0, 255, cv::NORM_MINMAX);
   //convertScaleAbs(lap, output.images[0]); // Conversion vers CV_8U
   output.names[0] = "Laplacien";
   return 0;
@@ -383,14 +383,14 @@ HoughDemo::HoughDemo()
 
 static void dessine_ligne(cv::Mat &I, float rho, float theta)
 {
-  Point pt1, pt2;
+  cv::Point pt1, pt2;
   double a = cos(theta), b = sin(theta);
   double x0 = a * rho, y0 = b * rho;
   pt1.x = cvRound(x0 + 1000 * (-b));
   pt1.y = cvRound(y0 + 1000 * (a));
   pt2.x = cvRound(x0 - 1000 * (-b));
   pt2.y = cvRound(y0 - 1000 * (a));
-  line(I, pt1, pt2, Scalar(0,0,255), 3, CV_AA);
+  line(I, pt1, pt2, cv::Scalar(0,0,255), 3, cv::LINE_AA);
 }
 
 
@@ -403,10 +403,10 @@ int HoughDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   float seuil_canny = input.model.get_attribute_as_float("seuil-canny");
   float angle = input.model.get_attribute_as_float("angle");
 
-  Mat dst, bw;
+  cv::Mat dst, bw;
   int ratio = 3;
   auto I = input.images[0].clone();
-  cv::cvtColor(I, bw, CV_BGR2GRAY);
+  cv::cvtColor(I, bw, cv::COLOR_BGR2GRAY);
 
   if(angle != 0)
   {
@@ -419,7 +419,7 @@ int HoughDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
     cv::Mat R = cv::getRotationMatrix2D(centre, angle, 1.0);
     cv::warpAffine(bw, bw, R, bw.size());
     cv::warpAffine(I, I, R, bw.size());
-    //bw = bw(Rect(sx/4,sy/4,sx/2,sy/2));
+    //bw = bw(cv::Rect(sx/4,sy/4,sx/2,sy/2));
   }
 
 
@@ -434,7 +434,7 @@ int HoughDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 
   cv::blur(bw, bw, cv::Size(3, 3));
   Canny(bw, bw, seuil_canny, seuil_canny * ratio, 3);
-  cvtColor(bw, output.images[0], CV_GRAY2BGR);
+  cvtColor(bw, output.images[0], cv::COLOR_GRAY2BGR);
 
   int sel = input.model.get_attribute_as_int("sel");
 
@@ -442,7 +442,7 @@ int HoughDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   {
     output.images[1] = I.clone();
     output.nout = 2;
-    std::vector<Vec2f> lignes;
+    std::vector<cv::Vec2f> lignes;
     HoughLines(bw, lignes, reso_rho, reso_theta, seuil, 0, 0);
     infos("Détecté %d lignes.\n", (int) lignes.size());
     for(const auto &l: lignes)
@@ -459,12 +459,12 @@ int HoughDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
     for(size_t i = 0; i < lines.size(); i++ )
     {
       //float rho = lines[i][0], theta = lines[i][1];
-      Point pt1, pt2;
+      cv::Point pt1, pt2;
       pt1.x = lines[i].val[0];
       pt1.y = lines[i].val[1];
       pt2.x = lines[i].val[2];
       pt2.y = lines[i].val[3];
-      line(output.images[1], pt1, pt2, Scalar(0,0,255), 3, CV_AA);
+      line(output.images[1], pt1, pt2, cv::Scalar(0,0,255), 3, cv::LINE_AA);
     }
   }
   else if(sel == 2)
@@ -472,7 +472,7 @@ int HoughDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
     output.nout = 3;
     output.images[0] = I.clone();
 
-    std::vector<Vec2f> lignes;
+    std::vector<cv::Vec2f> lignes;
     cv::Mat deb;
     ocvext::Hough_lines_with_gradient_dir(I, lignes, deb, reso_rho, reso_theta, 0.6, seuilg);
     cv::pyrUp(deb, deb);
@@ -495,17 +495,17 @@ HoughCDemo::HoughCDemo()
 
 int HoughCDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
-  Mat gris;
+  cv::Mat gris;
   double seuil_canny = input.model.get_attribute_as_int("seuil-canny");
 
   auto I = input.images[0];
-  cvtColor(I, gris, CV_BGR2GRAY);
+  cvtColor(I, gris, cv::COLOR_BGR2GRAY);
   output.images[0] = I.clone();
-  std::vector<Vec3f> cercles;
+  std::vector<cv::Vec3f> cercles;
   double seuil = input.model.get_attribute_as_int("seuil");
   int rmin = input.model.get_attribute_as_int("rmin");
   int rmax = input.model.get_attribute_as_int("rmax");
-  HoughCircles(gris, cercles, CV_HOUGH_GRADIENT, 2 /* dp = 2 */,
+  HoughCircles(gris, cercles, cv::HOUGH_GRADIENT, 2 /* dp = 2 */,
       20 /* min dist */,
       seuil_canny,
       seuil,
@@ -515,7 +515,7 @@ int HoughCDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   for(size_t i = 0; i < cercles.size(); i++ )
   {
     float xc = cercles[i][0], yc = cercles[i][1], r = cercles[i][2];
-    cv::circle(output.images[0], Point(xc,yc), r, Scalar(0,255,0), 2);
+    cv::circle(output.images[0], cv::Point(xc,yc), r, cv::Scalar(0,255,0), 2);
   }
 
   return 0;
@@ -527,7 +527,7 @@ RectDemo::RectDemo()
 }
 
 
-Point2f computeIntersect(cv::Vec4i a,
+cv::Point2f computeIntersect(cv::Vec4i a,
                          cv::Vec4i b)
 {
   int x1 = a[0], y1 = a[1], x2 = a[2], y2 = a[3], x3 = b[0], y3 = b[1], x4 = b[2], y4 = b[3];
@@ -579,11 +579,11 @@ int RectDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
   cv::Mat bw;
   auto I = input.images[0];
-  cv::cvtColor(I, bw, CV_BGR2GRAY);
+  cv::cvtColor(I, bw, cv::COLOR_BGR2GRAY);
   cv::blur(bw, bw, cv::Size(3, 3));
   cv::Canny(bw, bw, 100, 100, 3);
 
-  Mat I0 = I.clone();
+  cv::Mat I0 = I.clone();
 
   std::vector<cv::Vec4i> lines;
   cv::HoughLinesP(bw, lines, 1, CV_PI/180, 70, 30, 10);
@@ -622,7 +622,7 @@ int RectDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   {
     //errmsg = "obj-pas-quadri";
     //return -1;
-    output.images[0] = Mat::zeros(I.size(), CV_8UC3);
+    output.images[0] = cv::Mat::zeros(I.size(), CV_8UC3);
     return 0;
   }
 
@@ -633,7 +633,7 @@ int RectDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   center *= (1. / corners.size());
 
   output.images[0] = input.images[0].clone();
-  output.images[1] = Mat::zeros(I.size(), CV_8UC3);
+  output.images[1] = cv::Mat::zeros(I.size(), CV_8UC3);
 
   sortCorners(corners, center);
   if (corners.size() == 0)

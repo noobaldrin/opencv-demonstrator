@@ -81,7 +81,7 @@ void thinning_morpho(const cv::Mat &I, cv::Mat &O)
 {
   cv::Mat A = I;
 
-  //cv::cvtColor(I, A, CV_BGR2GRAY);
+  //cv::cvtColor(I, A, cv::COLOR_BGR2GRAY);
 
   //cv::threshold(A, A, 128, 255, cv::THRESH_OTSU);
   //A = 255 - A;

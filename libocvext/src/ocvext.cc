@@ -181,7 +181,7 @@ void dbg_image(const std::string &name,
     }
 
     if(m2.channels() == 1)
-      cv::cvtColor(m2, m2, CV_GRAY2BGR);
+      cv::cvtColor(m2, m2, cv::COLOR_GRAY2BGR);
     m2.convertTo(m2, CV_8U);
 
     if(config.enreg_images_intermediaires)
@@ -369,7 +369,7 @@ void plot_1d(cv::Mat &image, const cv::Mat &x_, cv::Scalar color)
     cv::line(image,
              cv::Point((i-1)* sx / n,sy-lxi),
              cv::Point(i * sx / n,sy-xi),
-             color, 1, CV_AA);
+             color, 1, cv::LINE_AA);
 
     lxi = xi;
   }
@@ -402,7 +402,7 @@ void adapte_en_bgr(const cv::Mat &I, cv::Mat &O)
   cv::Mat O1;
 
   if(I.channels() == 1)
-    cv::cvtColor(I, O1, CV_GRAY2BGR);
+    cv::cvtColor(I, O1, cv::COLOR_GRAY2BGR);
   else
     O1 = I.clone();
 
@@ -434,7 +434,7 @@ void MultiPlot::ajoute(std::string nom, const cv::Mat &I, uint16_t ncols)
 
   putText(img, nom.c_str(), cv::Point(col*sx,ligne*sy+sz.height + 2),
       cv::FONT_HERSHEY_COMPLEX, 0.8,
-      cv::Scalar(0,255,255),1,CV_AA);
+      cv::Scalar(0,255,255),1,cv::LINE_AA);
   cnt += ncols;
 }
 

@@ -46,8 +46,8 @@ public:
   int proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output);
 private:
   //cv::BackgroundSubtractorMOG mog;
-  Ptr<cv::BackgroundSubtractor> algo;
-  Mat mhi;
+  cv::Ptr<cv::BackgroundSubtractor> algo;
+  cv::Mat mhi;
   int nframes;
   int osel;
   void update_sel(int nsel);

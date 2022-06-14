@@ -165,7 +165,7 @@ void Hough_with_gradient_dir(const cv::Mat &img,
   cv::Mat gris = img, gx, gy, mag, angle;
 
   if(img.channels() != 1)
-    cv::cvtColor(img, gris, CV_BGR2GRAY);
+    cv::cvtColor(img, gris, cv::COLOR_BGR2GRAY);
 
   if(use_deriche)
   {
@@ -193,7 +193,7 @@ void Hough_without_gradient_dir(const cv::Mat &img,
 {
   cv::Mat gris = img, gx, gy, mag, angle;
   if(img.channels() != 1)
-    cv::cvtColor(img, gris, CV_BGR2GRAY);
+    cv::cvtColor(img, gris, cv::COLOR_BGR2GRAY);
   printf("deriche...\n"); fflush(0);
   Deriche_gradient(gris, gx, gy, gamma);
   cv::cartToPolar(gx, gy, mag, angle);
@@ -274,11 +274,11 @@ void Hough_lines_with_gradient_dir(const cv::Mat &img,
   }
 
   debug.convertTo(debug, CV_8U);
-  cvtColor(debug, debug, CV_GRAY2BGR);
+  cvtColor(debug, debug, cv::COLOR_GRAY2BGR);
   for(auto i = 0u; i < locations.total(); i++)
   {
     cv::Point p = locations.at<cv::Point>(i);
-    cv::circle(debug, p, 5, cv::Scalar(100,255,100), 1, CV_AA);
+    cv::circle(debug, p, 5, cv::Scalar(100,255,100), 1, cv::LINE_AA);
   }
 }
 

@@ -43,7 +43,6 @@
 using namespace utils;
 using namespace utils::model;
 using namespace utils::mmi;
-using namespace cv;
 
 /** Current software revision */
 #ifndef VMAJ
@@ -140,7 +139,7 @@ private:
   bool are_all_video_ok();
 
   void export_captures(utils::model::Node &cat);
-  Mat  get_current_output();
+  cv::Mat  get_current_output();
   bool has_output();
   void setup_demo(const utils::model::Node &sel);
   void maj_bts();

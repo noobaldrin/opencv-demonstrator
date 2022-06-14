@@ -60,7 +60,7 @@ int MatchDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 
     output.nout = 1;
 
-    Ptr<cv::Feature2D> detecteur;
+    cv::Ptr<cv::Feature2D> detecteur;
 
 
     int sel = input.model.get_attribute_as_int("sel");
@@ -70,11 +70,11 @@ int MatchDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
       detecteur = cv::BRISK::create();
 
     std::vector<cv::KeyPoint> kpts[2];
-    Mat desc[2];
+    cv::Mat desc[2];
 
     // OCV 3.0
-    detecteur->detectAndCompute(imgs[0], Mat(), kpts[0], desc[0]);
-    detecteur->detectAndCompute(imgs[1], Mat(), kpts[1], desc[1]);
+    detecteur->detectAndCompute(imgs[0], cv::Mat(), kpts[0], desc[0]);
+    detecteur->detectAndCompute(imgs[1], cv::Mat(), kpts[1], desc[1]);
 
     if((kpts[0].size() == 0) || (kpts[1].size() == 0))
     {
@@ -84,10 +84,10 @@ int MatchDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
     }
 
     bool cross_check = input.model.get_attribute_as_boolean("cross-check");
-    cv::BFMatcher matcher(NORM_HAMMING, cross_check);
-    std::vector<std::vector<DMatch>> matches;
+    cv::BFMatcher matcher(cv::NORM_HAMMING, cross_check);
+    std::vector<std::vector<cv::DMatch>> matches;
     matcher.knnMatch(desc[0], desc[1], matches, 2);
-    std::vector<DMatch> good_matches;
+    std::vector<cv::DMatch> good_matches;
     auto SEUIL_RATIO = input.model.get_attribute_as_float("seuil-ratio");
 //#    define SEUIL_RATIO .5f
     //0.65f
@@ -131,7 +131,7 @@ int MatchDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 #   endif
 
 
-    output.images[0] = Mat::zeros(Size(640*2,480*2), CV_8UC3);
+    output.images[0] = cv::Mat::zeros(cv::Size(640*2,480*2), CV_8UC3);
 
     if(good_matches.size() > 0)
       cv::drawMatches(imgs[0], kpts[0], imgs[1], kpts[1], good_matches, output.images[0]);
@@ -153,7 +153,7 @@ int MatchDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
         scene.push_back( kpts[1][ good_matches[i].trainIdx ].pt );
       }
 
-      Mat H = findHomography(obj, scene, CV_RANSAC);
+     cv::Mat H = findHomography(obj, scene, CV_RANSAC);
 
       //-- Get the corners from the image_1 ( the object to be "detected" )
       std::vector<Point2f> obj_corners(4);
@@ -172,16 +172,16 @@ int MatchDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
       //-- Draw lines between the corners (the mapped object in the scene - image_2 )
       line(I, scene_corners[0] + dec,
                         scene_corners[1] + dec,
-                        Scalar(0, 255, 0), 4 );
+                        cv::Scalar(0, 255, 0), 4 );
       line(I, scene_corners[1] + dec,
                         scene_corners[2] + dec,
-                        Scalar( 0, 255, 0), 4 );
+                        cv::Scalar( 0, 255, 0), 4 );
       line(I, scene_corners[2] + dec,
                         scene_corners[3] + dec,
-                        Scalar( 0, 255, 0), 4 );
+                        cv::Scalar( 0, 255, 0), 4 );
       line(I, scene_corners[3] + dec,
                         scene_corners[0] + dec,
-                        Scalar( 0, 255, 0), 4 );
+                        cv::Scalar( 0, 255, 0), 4 );
 #   endif
     }
 #   endif
@@ -210,21 +210,21 @@ int PanoDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   if(!lock)
   {
     lock = true;
-    Stitcher stitcher = Stitcher::createDefault();
+        auto stitcher = cv::Stitcher::create(cv::Stitcher::Mode::PANORAMA);
 
-    Mat pano;
+   cv::Mat pano;
 
-    auto t0 = getTickCount();
-    auto status = stitcher.stitch(input.images, pano);
-    t0 = getTickCount() - t0;
+    auto t0 = cv::getTickCount();
+    auto status = stitcher->stitch(input.images, pano);
+    t0 = cv::getTickCount() - t0;
 
     output.images[0] = pano;
 //    output.vrai_sortie = pano; // to deprecate
     output.names[0] = "Panorama";
 
-    trace_verbeuse("%.2lf sec\n",  t0 / getTickFrequency());
+    trace_verbeuse("%.2lf sec\n",  t0 / cv::getTickFrequency());
 
-    if (status != Stitcher::OK)
+    if (status != cv::Stitcher::OK)
     {
      avertissement("échec pano.");
      return -1;
@@ -243,7 +243,7 @@ ScoreShiTomasi::ScoreShiTomasi()
 int ScoreShiTomasi::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
   cv::Mat I, O;
-  cv::cvtColor(input.images[0], I, CV_BGR2GRAY);
+  cv::cvtColor(input.images[0], I, cv::COLOR_BGR2GRAY);
   I.convertTo(I, CV_32F);
   int sel = input.model.get_attribute_as_int("sel");
   int tbloc = input.model.get_attribute_as_int("tbloc");
@@ -252,7 +252,7 @@ int ScoreShiTomasi::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   if((ksize & 1) == 0)
     ksize++;
 
-  O = Mat::zeros(I.size(), CV_32F);
+  O = cv::Mat::zeros(I.size(), CV_32F);
 
   if(sel == 0)
     cv::cornerHarris(I, O, tbloc, ksize, k);
@@ -273,33 +273,33 @@ int CornerDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
   int sel = input.model.get_attribute_as_int("sel");
   int max_pts = input.model.get_attribute_as_int("max-pts");
-  Ptr<FeatureDetector> detector;
+  cv::Ptr<cv::FeatureDetector> detector;
 
   // Shi-Tomasi
   if(sel == 0)
   {
-    detector = GFTTDetector::create(max_pts, 0.01, 10, 3, false);
+    detector = cv::GFTTDetector::create(max_pts, 0.01, 10, 3, false);
   }
   // Harris
   else if(sel == 1)
   {
-    detector = GFTTDetector::create(max_pts, 0.01, 10, 3, true);
+    detector = cv::GFTTDetector::create(max_pts, 0.01, 10, 3, true);
   }
   // FAST
   else if(sel == 2)
   {
-    detector = FastFeatureDetector::create();
+    detector = cv::FastFeatureDetector::create();
   }
   // SURF
   else if(sel == 3)
   {
-    detector = ORB::create(max_pts);
+    detector = cv::ORB::create(max_pts);
   }
 
-  Mat gris;
+  cv::Mat gris;
   //GoodFeaturesToTrackDetector harris_detector(1000, 0.01, 10, 3, true );
-  std::vector<KeyPoint> keypoints;
-  cvtColor(input.images[0], gris, CV_BGR2GRAY);
+  std::vector<cv::KeyPoint> keypoints;
+  cvtColor(input.images[0], gris, cv::COLOR_BGR2GRAY);
 
   infos("detection...");
   detector->detect(gris, keypoints);
@@ -308,7 +308,7 @@ int CornerDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
     //keypoints.resize(max_pts);
   output.images[0] = input.images[0].clone();
   infos("drawK");
-  drawKeypoints(input.images[0], keypoints, output.images[0], Scalar(0, 0, 255));
+  drawKeypoints(input.images[0], keypoints, output.images[0], cv::Scalar(0, 0, 255));
   infos("ok");
   return 0;
 }
@@ -316,8 +316,8 @@ int CornerDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 
 VisageDemo::VisageDemo(): rng(12345)
 {
-  String face_cascade_name = "./data/cascades/haarcascade_frontalface_alt.xml";
-  String eyes_cascade_name = "./data/cascades/haarcascade_eye_tree_eyeglasses.xml";
+  cv::String face_cascade_name = "./data/cascades/haarcascade_frontalface_alt.xml";
+  cv::String eyes_cascade_name = "./data/cascades/haarcascade_eye_tree_eyeglasses.xml";
   props.id = "casc-visage";
   //-- 1. Load the cascades
   if(!face_cascade.load(face_cascade_name))
@@ -336,10 +336,10 @@ VisageDemo::VisageDemo(): rng(12345)
 
 int VisageDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
-  std::vector<Rect> faces;
-  Mat frame_gray;
+  std::vector<cv::Rect> faces;
+  cv::Mat frame_gray;
   auto I = input.images[0];
-  cvtColor(I, frame_gray, CV_BGR2GRAY);
+  cvtColor(I, frame_gray, cv::COLOR_BGR2GRAY);
   equalizeHist(frame_gray, frame_gray);
 
   output.images[0] = I.clone();
@@ -354,28 +354,29 @@ int VisageDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   face_cascade.detectMultiScale(frame_gray, faces,
                                 1.1, // scale factor
                                 2,   // min neighbors
-                                0 | CV_HAAR_SCALE_IMAGE,
-                                Size(minsizex,minsizey),  // Minimum size
-                                Size()); // Maximum size
+                                0 | cv::CASCADE_SCALE_IMAGE,
+                                cv::Size(minsizex,minsizey),  // Minimum size
+                                cv::Size()); // Maximum size
 
 
   infos("Détecté %d visages.", faces.size());
   for(size_t i = 0; i < faces.size(); i++ )
   {
-    Point center( faces[i].x + faces[i].width * 0.5, faces[i].y + faces[i].height * 0.5 );
-    cv::rectangle(output.images[0], Point(faces[i].x, faces[i].y), Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height), Scalar(0,255,0), 3);
-    Mat faceROI = frame_gray(faces[i]);
-    std::vector<Rect> eyes;
+    cv::Point center( faces[i].x + faces[i].width * 0.5, faces[i].y + faces[i].height * 0.5 );
+    cv::rectangle(output.images[0], cv::Point(faces[i].x, faces[i].y), cv::Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height), cv::Scalar(0,255,0), 3);
+    cv::Mat faceROI = frame_gray(faces[i]);
+    std::vector<cv::Rect> eyes;
     //-- In each face, detect eyes
     trace_verbeuse("Détection yeux...");
     eyes_cascade.detectMultiScale(faceROI, eyes, 1.05, 2,
-                                  CV_HAAR_SCALE_IMAGE);//, Size(5, 5) );
+                                  cv::CASCADE_SCALE_IMAGE);//, cv::Size(5, 5) );
     trace_verbeuse("%d trouvés.\n", eyes.size());
     for(size_t j = 0; j < eyes.size(); j++)
     {
-      Point center( faces[i].x + eyes[j].x + eyes[j].width * 0.5, faces[i].y + eyes[j].y + eyes[j].height * 0.5 );
+      cv::Point center( faces[i].x + eyes[j].x + eyes[j].width * 0.5, faces[i].y + eyes[j].y + eyes[j].height * 
+0.5 );
       int radius = cvRound( (eyes[j].width + eyes[j].height) * 0.25 );
-      circle(output.images[0], center, radius, Scalar( 255, 0, 0 ), 4, CV_AA, 0);
+      circle(output.images[0], center, radius, cv::Scalar( 255, 0, 0 ), 4, cv::LINE_AA, 0);
     }
   }
 
@@ -447,9 +448,9 @@ int CascGenDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 
   auto I = input.images[0];
 
-  std::vector<Rect> rdi;
-  Mat frame_gray;
-  cvtColor(I, frame_gray, CV_BGR2GRAY);
+  std::vector<cv::Rect> rdi;
+  cv::Mat frame_gray;
+  cvtColor(I, frame_gray, cv::COLOR_BGR2GRAY);
   equalizeHist(frame_gray, frame_gray);
 
   int sel = 0;
@@ -467,18 +468,18 @@ int CascGenDemo::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   cascade[sel].detectMultiScale(frame_gray, rdi,
                                 1.1, /* facteur d'échelle */
                                 2, /* min voisins ? */
-                                CV_HAAR_SCALE_IMAGE, /* ? */
-                                Size(minsizex,minsizey),
-                                Size(/*maxsizex,maxsizey*/));
+                                cv::CASCADE_SCALE_IMAGE, /* ? */
+                                cv::Size(minsizex,minsizey),
+                                cv::Size(/*maxsizex,maxsizey*/));
 
   output.images[0] = I.clone();
 
   infos("Détecté %d objets.", rdi.size());
   for(size_t i = 0; i < rdi.size(); i++ )
   {
-    Point center( rdi[i].x + rdi[i].width * 0.5, rdi[i].y + rdi[i].height * 0.5 );
+    cv::Point center( rdi[i].x + rdi[i].width * 0.5, rdi[i].y + rdi[i].height * 0.5 );
     cv::rectangle(output.images[0], rdi[i],
-                  Scalar(0,255,0), 3);
+                  cv::Scalar(0,255,0), 3);
   }
   return 0;
 }
@@ -492,12 +493,12 @@ int DemoHog::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
 {
   //HOGDescriptor::getDefaultPeopleDetector();
 
-  HOGDescriptor hog;
+  cv::HOGDescriptor hog;
   std::vector<float> ders;
-  std::vector<Point>locs;
+  std::vector<cv::Point>locs;
 
   cv::Mat img;
-  cvtColor(input.images[0], img, CV_BGR2GRAY);
+  cvtColor(input.images[0], img, cv::COLOR_BGR2GRAY);
 
   infos("img.size = %d * %d.", img.cols, img.rows);
 
@@ -506,15 +507,15 @@ int DemoHog::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   hog.signedGradient    = true;
   hog.derivAperture     = 0;
   hog.winSigma          = -1;
-  hog.histogramNormType = 0;
+  hog.histogramNormType = cv::HOGDescriptor::HistogramNormType::L2Hys;
   hog.L2HysThreshold    = 0.2;
   hog.gammaCorrection   = false;
   uint16_t dim_cellule  = input.model.get_attribute_as_int("dim-cellule");
   uint16_t dim_bloc     = input.model.get_attribute_as_int("dim-bloc");
-  hog.cellSize          = Size(dim_cellule,dim_cellule);
-  hog.winSize           = Size(dim_bloc*dim_cellule,dim_bloc*dim_cellule);
-  hog.blockStride       = Size(dim_bloc*dim_cellule,dim_bloc*dim_cellule);
-  hog.blockSize         = Size(dim_bloc*dim_cellule,dim_bloc*dim_cellule);
+  hog.cellSize          = cv::Size(dim_cellule,dim_cellule);
+  hog.winSize           = cv::Size(dim_bloc*dim_cellule,dim_bloc*dim_cellule);
+  hog.blockStride       = cv::Size(dim_bloc*dim_cellule,dim_bloc*dim_cellule);
+  hog.blockSize         = cv::Size(dim_bloc*dim_cellule,dim_bloc*dim_cellule);
   hog.compute(img, ders);
 
   // Théoriquement, 512 * 512 / (16 * 16) = 1024 cellules
@@ -525,20 +526,20 @@ int DemoHog::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   uint16_t sx = img.cols, sy = img.rows;
   uint16_t ncellsx = sx / dim_cellule, ncellsy = sy / dim_cellule;
   uint16_t res = 16;
-  Mat O = Mat::zeros(Size(ncellsx * res, ncellsy * res), CV_32F);
+  cv::Mat O = cv::Mat::zeros(cv::Size(ncellsx * res, ncellsy * res), CV_32F);
 
-  Mat tmp = Mat::zeros(Size(res,res), CV_32F);
+  cv::Mat tmp = cv::Mat::zeros(cv::Size(res,res), CV_32F);
   for(auto b = 0; b < hog.nbins; b++)
   {
-    Mat masque2 = Mat::zeros(Size(res, res), CV_32F);
-    Point p1(res/2,res/2), p2;
+    cv::Mat masque2 = cv::Mat::zeros(cv::Size(res, res), CV_32F);
+    cv::Point p1(res/2,res/2), p2;
     float angle = (b * 2 * 3.1415926) / hog.nbins;
     p2.x = res/2 + 2 * res * cos(angle);
     p2.y = res/2 + 2 * res * sin(angle);
-    cv::line(masque2, p1, p2, Scalar(1), 1, CV_AA);
+    cv::line(masque2, p1, p2, cv::Scalar(1), 1, cv::LINE_AA);
     p2.x = res/2 - 2 * res * cos(angle);
     p2.y = res/2 - 2 * res * sin(angle);
-    cv::line(masque2, p1, p2, Scalar(1), 1, CV_AA);
+    cv::line(masque2, p1, p2, cv::Scalar(1), 1, cv::LINE_AA);
     tmp = tmp + masque2;
   }
 
@@ -546,30 +547,30 @@ int DemoHog::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   {
     for(auto x = 0; x < ncellsx; x++)
     {
-      Mat masque = Mat::zeros(Size(res, res), CV_32F);
+      cv::Mat masque = cv::Mat::zeros(cv::Size(res, res), CV_32F);
       for(auto b = 0; b < hog.nbins; b++)
       {
         float val = ders.at(y * ncellsx * hog.nbins + x * hog.nbins + b);
-        Mat masque2 = Mat::zeros(Size(res, res), CV_32F);
-        Point p1(res/2,res/2), p2;
+        cv::Mat masque2 = cv::Mat::zeros(cv::Size(res, res), CV_32F);
+                cv::Point p1(res/2,res/2), p2;
         float angle = (b * 2 * 3.1415926) / hog.nbins;
         p2.x = res/2 + 2 * res * cos(angle);
         p2.y = res/2 + 2 * res * sin(angle);
-        cv::line(masque2, p1, p2, Scalar(val), 1, CV_AA);
+        cv::line(masque2, p1, p2, cv::Scalar(val), 1, cv::LINE_AA);
         p2.x = res/2 - 2 * res * cos(angle);
         p2.y = res/2 - 2 * res * sin(angle);
-        cv::line(masque2, p1, p2, Scalar(val), 1, CV_AA);
+        cv::line(masque2, p1, p2, cv::Scalar(val), 1, cv::LINE_AA);
         masque = masque + masque2;
       }
       masque = masque / tmp;
-      Mat rdi(O, Rect(x * res, y * res, res, res));
+      cv::Mat rdi(O,cv::Rect(x * res, y * res, res, res));
       masque.copyTo(rdi);
     }
   }
 
-  cv::normalize(O, O, 0, 255, NORM_MINMAX);
+  cv::normalize(O, O, 0, 255, cv::NORM_MINMAX);
   O.convertTo(O, CV_8U);
-  cvtColor(O, O, CV_GRAY2BGR);
+  cvtColor(O, O, cv::COLOR_GRAY2BGR);
   output.images[0] = O;
 
   output.nout = 1;
@@ -577,13 +578,13 @@ int DemoHog::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &output)
   if(input.model.get_attribute_as_boolean("detecte-personnes"))
   {
     auto img = O.clone();
-    auto coefs = HOGDescriptor::getDefaultPeopleDetector();
+    auto coefs = cv::HOGDescriptor::getDefaultPeopleDetector();
     hog.setSVMDetector(coefs);
     std::vector<cv::Rect> locs;
     hog.detectMultiScale(img, locs);//, double hit_thres, Size winStride,
     //    Size padding, double scale, double fthreshold, false);
     for(auto &r: locs)
-      cv::rectangle(img, r, Scalar(0,0,255), 1, CV_AA);
+      cv::rectangle(img, r, cv::Scalar(0,0,255), 1, cv::LINE_AA);
     output.nout = 2;
     output.images[1] = img;
   }
@@ -639,7 +640,7 @@ int DemoFaceRecognizer::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &outp
   if(algo <= 2)
   {
     unsigned int ncompos = 0;
-    Ptr<cv::face::FaceRecognizer> model;
+    cv::Ptr<cv::face::FaceRecognizer> model;
 
     if(algo == 0)
     {
@@ -677,7 +678,7 @@ int DemoFaceRecognizer::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &outp
     if(algo <= 1)
     {
       cv::face::BasicFaceRecognizer *model2 = (cv::face::BasicFaceRecognizer *) model.get();
-      Mat ev = model2->getEigenVectors();
+      cv::Mat ev = model2->getEigenVectors();
       infos("Eigen vectors = %d * %d.", ev.cols, ev.rows);
       // 80 * 10304 = numcompos * (nbdims total)
 
@@ -691,7 +692,7 @@ int DemoFaceRecognizer::proceed(OCVDemoItemInput &input, OCVDemoItemOutput &outp
 
         //trace_verbeuse("nv taille = %d * %d.", mat.cols, mat.rows);
         mat.convertTo(mat, CV_32F);
-        cv::normalize(mat, mat, 0, 1.0, NORM_MINMAX);
+        cv::normalize(mat, mat, 0, 1.0,cv::NORM_MINMAX);
         mat.convertTo(mat, CV_8U, 255);
         output.images[i] = mat;
       }
